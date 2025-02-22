@@ -1,0 +1,7 @@
+.cpcache
+.DC_Store
+.nrepl-port
+.clay.html
+docs/*qmd
+.DS_Store
+raw-datasets/

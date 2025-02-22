@@ -1,0 +1,7 @@
+{:deps {camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
+        org.scicloj/clay                    {:mvn/version "2-beta27"}
+        org.scicloj/noj                     {:mvn/version "2-beta4"}
+        org.scicloj/tableplot               {:mvn/version "1-beta9"}
+        scicloj/tablecloth                  {:mvn/version "7.029.2"}
+        scicloj/clojisr                     {:mvn/version "1.0.0"}
+        techascent/tech.ml.dataset          {:mvn/version "7.042"}}}
