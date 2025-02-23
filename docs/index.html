@@ -192,509 +192,121 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 <script src="index_files/md-default0.js" type="text/javascript"></script>
 <script src="index_files/md-default1.js" type="text/javascript"></script>
+<script src="index_files/plotly2.js" type="text/javascript"></script>
+<div class="printedClojure">
+<div class="sourceCode" id="cb1"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>java.<span class="kw">time</span>.LocalDateTime</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 <section id="grand-ave-crash-data" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> Grand Ave Crash Data</h1>
 <p>Using data from the <a href="https://data.ca.gov/dataset/ccrs">California Crash Reporting System (CCRS)</a></p>
 <div class="sourceClojure">
-<div class="sourceCode" id="cb1"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> intersections-of-interest</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  #{<span class="st">"HARRISON"</span> <span class="st">"BAY"</span> <span class="st">"PARK VIEW"</span> <span class="st">"BELLEVUE"</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"LENOX"</span> <span class="st">"LEE"</span> <span class="st">"PERKINS"</span> <span class="st">"ELLITA"</span> <span class="st">"STATEN"</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"EUCLID"</span> <span class="st">"EMBARCADERO"</span> <span class="st">"MACARTHUR"</span> <span class="st">"LAKE PARK"</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"SANTA CLARA"</span> <span class="st">"ELWOOD"</span> <span class="st">"MANDANA"</span>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> intersections-of-interest</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  #{<span class="st">"HARRISON"</span> <span class="st">"BAY"</span> <span class="st">"PARK VIEW"</span> <span class="st">"BELLEVUE"</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"LENOX"</span> <span class="st">"LEE"</span> <span class="st">"PERKINS"</span> <span class="st">"ELLITA"</span> <span class="st">"STATEN"</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"EUCLID"</span> <span class="st">"EMBARCADERO"</span> <span class="st">"MACARTHUR"</span> <span class="st">"LAKE PARK"</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"SANTA CLARA"</span> <span class="st">"ELWOOD"</span> <span class="st">"MANDANA"</span>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="sourceClojure">
-<div class="sourceCode" id="cb2"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> csv-files </span>[<span class="st">"notebooks/datasets/2015crashes.csv"</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                <span class="st">"notebooks/datasets/2016crashes.csv"</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                <span class="st">"notebooks/datasets/2017crashes.csv"</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                <span class="st">"notebooks/datasets/2018crashes.csv"</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                <span class="st">"notebooks/datasets/2019crashes.csv"</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                <span class="st">"notebooks/datasets/2020crashes.csv"</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                <span class="st">"notebooks/datasets/2021crashes.csv"</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>                <span class="st">"notebooks/datasets/2022crashes.csv"</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>                <span class="st">"notebooks/datasets/2023crashes.csv"</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>                <span class="st">"notebooks/datasets/2024crashes.csv"</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>                <span class="st">"notebooks/datasets/2025crashes.csv"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> csv-files </span>[<span class="st">"notebooks/datasets/2015crashes.csv"</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                <span class="st">"notebooks/datasets/2016crashes.csv"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>                <span class="st">"notebooks/datasets/2017crashes.csv"</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>                <span class="st">"notebooks/datasets/2018crashes.csv"</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                <span class="st">"notebooks/datasets/2019crashes.csv"</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>                <span class="st">"notebooks/datasets/2020crashes.csv"</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>                <span class="st">"notebooks/datasets/2021crashes.csv"</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>                <span class="st">"notebooks/datasets/2022crashes.csv"</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>                <span class="st">"notebooks/datasets/2023crashes.csv"</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>                <span class="st">"notebooks/datasets/2024crashes.csv"</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>                <span class="st">"notebooks/datasets/2025crashes.csv"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="sourceClojure">
-<div class="sourceCode" id="cb3"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> load-and-combine-csvs </span>[file-paths]</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">let</span> [datasets (<span class="kw">map</span> #(ds/-&gt;dataset <span class="va">%</span> {<span class="at">:key-fn</span>    csk/-&gt;kebab-case-keyword</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">:parser-fn</span> {<span class="at">:collision-id</span>       <span class="at">:integer</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>                                                    <span class="at">:ncic-code</span>          <span class="at">:integer</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                                                    <span class="at">:is-highway-related</span> <span class="at">:boolean</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>                                                    <span class="at">:is-tow-away</span>        <span class="at">:boolean</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>                                                    <span class="at">:number-injured</span>     <span class="at">:integer</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>                                                    <span class="at">:number-killed</span>      <span class="at">:integer</span>}})</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>                      file-paths)]</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">apply</span> ds/concat datasets)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> load-and-combine-csvs </span>[file-paths]</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">let</span> [datasets (<span class="kw">map</span> #(ds/-&gt;dataset <span class="va">%</span> {<span class="at">:key-fn</span>    csk/-&gt;kebab-case-keyword</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">:parser-fn</span> {<span class="at">:collision-id</span>       <span class="at">:integer</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>                                                    <span class="at">:crash-date-time</span>    <span class="at">:local-date-time</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>                                                    <span class="at">:ncic-code</span>          <span class="at">:integer</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>                                                    <span class="at">:is-highway-related</span> <span class="at">:boolean</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>                                                    <span class="at">:is-tow-away</span>        <span class="at">:boolean</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>                                                    <span class="at">:number-injured</span>     <span class="at">:integer</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>                                                    <span class="at">:number-killed</span>      <span class="at">:integer</span>}})</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>                      file-paths)]</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">apply</span> ds/concat datasets)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="sourceClojure">
-<div class="sourceCode" id="cb4"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (load-and-combine-csvs csv-files)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    (ds/select-columns [<span class="at">:collision-id</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>                        <span class="at">:ncic-code</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">:crash-date-time</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>                        <span class="at">:collision-type-description</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>                        <span class="at">:day-of-week</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>                        <span class="at">:is-highway-related</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>                        <span class="at">:motor-vehicle-involved-with-desc</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>                        <span class="at">:motor-vehicle-involved-with-other-desc</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>                        <span class="at">:number-injured</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>                        <span class="at">:number-killed</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>                        <span class="at">:lighting-description</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>                        <span class="at">:latitude</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>                        <span class="at">:longitude</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>                        <span class="at">:pedestrian-action-desc</span></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>                        <span class="at">:primary-road</span></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>                        <span class="at">:secondary-road</span>])</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    (ds/filter #(clojure.string/includes? (<span class="kw">or</span> (<span class="at">:primary-road</span> <span class="va">%</span>)</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>                                              (<span class="at">:secondary-road</span> <span class="va">%</span>)) <span class="st">"GRAND"</span>))</span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    (ds/filter (<span class="kw">fn</span> [row]</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>                 (<span class="kw">or</span> (<span class="kw">some</span> #(clojure.string/includes? (<span class="at">:primary-road</span> row) <span class="va">%</span>)</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>                           intersections-of-interest)</span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>                     (<span class="kw">some</span> #(clojure.string/includes? (<span class="at">:secondary-road</span> row) <span class="va">%</span>)</span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>                           intersections-of-interest))))</span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    (tc/dataset))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> grand-ave-crashes</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;</span> (load-and-combine-csvs csv-files)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>      (ds/select-columns [<span class="at">:collision-id</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                          <span class="at">:ncic-code</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>                          <span class="at">:crash-date-time</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>                          <span class="at">:collision-type-description</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>                          <span class="at">:day-of-week</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>                          <span class="at">:is-highway-related</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>                          <span class="at">:motor-vehicle-involved-with-desc</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>                          <span class="at">:motor-vehicle-involved-with-other-desc</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>                          <span class="at">:number-injured</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>                          <span class="at">:number-killed</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>                          <span class="at">:lighting-description</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>                          <span class="at">:latitude</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>                          <span class="at">:longitude</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>                          <span class="at">:pedestrian-action-desc</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>                          <span class="at">:primary-road</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>                          <span class="at">:secondary-road</span>])</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>      (ds/filter #(clojure.string/includes? (<span class="kw">or</span> (<span class="at">:primary-road</span> <span class="va">%</span>)</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>                                                (<span class="at">:secondary-road</span> <span class="va">%</span>)) <span class="st">"GRAND"</span>))</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>      (ds/filter (<span class="kw">fn</span> [row]</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>                   (<span class="kw">or</span> (<span class="kw">some</span> #(clojure.string/includes? (<span class="at">:primary-road</span> row) <span class="va">%</span>)</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>                             intersections-of-interest)</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>                       (<span class="kw">some</span> #(clojure.string/includes? (<span class="at">:secondary-road</span> row) <span class="va">%</span>)</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>                             intersections-of-interest))))))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="clay-dataset">
-<p>notebooks/datasets/2015crashes.csv [227 16]:</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 4%">
-<col style="width: 3%">
-<col style="width: 7%">
-<col style="width: 8%">
-<col style="width: 4%">
-<col style="width: 6%">
-<col style="width: 10%">
-<col style="width: 12%">
-<col style="width: 5%">
-<col style="width: 4%">
-<col style="width: 6%">
-<col style="width: 3%">
-<col style="width: 3%">
-<col style="width: 7%">
-<col style="width: 4%">
-<col style="width: 5%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>:collision-id</th>
-<th>:ncic-code</th>
-<th>:crash-date-time</th>
-<th>:collision-type-description</th>
-<th>:day-of-week</th>
-<th>:is-highway-related</th>
-<th>:motor-vehicle-involved-with-desc</th>
-<th>:motor-vehicle-involved-with-other-desc</th>
-<th>:number-injured</th>
-<th>:number-killed</th>
-<th>:lighting-description</th>
-<th style="text-align: right;">:latitude</th>
-<th style="text-align: right;">:longitude</th>
-<th>:pedestrian-action-desc</th>
-<th>:primary-road</th>
-<th>:secondary-road</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>3825266</td>
-<td>0109</td>
-<td>2/27/2016 2:05:00 PM</td>
-<td>BROADSIDE</td>
-<td>Saturday</td>
-<td>false</td>
-<td>OTHER MOTOR VEHICLE</td>
-<td></td>
-<td>1</td>
-<td>0</td>
-<td>DAYLIGHT</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td>NO PEDESTRIANS INVOLVED</td>
-<td>GRAND AV</td>
-<td>PARK VIEW TER</td>
-</tr>
-<tr class="even">
-<td>3825240</td>
-<td>0109</td>
-<td>1/8/2016 4:32:00 PM</td>
-<td>SIDE SWIPE</td>
-<td>Friday</td>
-<td>false</td>
-<td>OTHER MOTOR VEHICLE</td>
-<td></td>
-<td>2</td>
-<td>0</td>
-<td>DAYLIGHT</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td>NO PEDESTRIANS INVOLVED</td>
-<td>GRAND AV</td>
-<td>PARK VIEW TER</td>
-</tr>
-<tr class="odd">
-<td>3841290</td>
-<td>0109</td>
-<td>2/23/2016 7:26:00 AM</td>
-<td>REAR END</td>
-<td>Tuesday</td>
-<td>false</td>
-<td>OTHER MOTOR VEHICLE</td>
-<td></td>
-<td>1</td>
-<td>0</td>
-<td>DAYLIGHT</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td>NO PEDESTRIANS INVOLVED</td>
-<td>GRAND AV</td>
-<td>EL EMBARCADERO</td>
-</tr>
-<tr class="even">
-<td>3851700</td>
-<td>0109</td>
-<td>3/7/2016 5:51:00 PM</td>
-<td>SIDE SWIPE</td>
-<td>Monday</td>
-<td>false</td>
-<td>OTHER MOTOR VEHICLE</td>
-<td></td>
-<td>1</td>
-<td>0</td>
-<td>DAYLIGHT</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td>NO PEDESTRIANS INVOLVED</td>
-<td>GRAND AV</td>
-<td>EL EMBARCADERO AV</td>
-</tr>
-<tr class="odd">
-<td>3851684</td>
-<td>0109</td>
-<td>3/26/2016 3:24:00 PM</td>
-<td>REAR END</td>
-<td>Saturday</td>
-<td>false</td>
-<td>OTHER MOTOR VEHICLE</td>
-<td></td>
-<td>1</td>
-<td>0</td>
-<td>DAYLIGHT</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td>NO PEDESTRIANS INVOLVED</td>
-<td>GRAND AV</td>
-<td>LAKE PARK AV</td>
-</tr>
-<tr class="even">
-<td>3851129</td>
-<td>0109</td>
-<td>2/20/2016 9:55:00 AM</td>
-<td>BROADSIDE</td>
-<td>Saturday</td>
-<td>false</td>
-<td>OTHER MOTOR VEHICLE</td>
-<td></td>
-<td>2</td>
-<td>0</td>
-<td>DAYLIGHT</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td>NO PEDESTRIANS INVOLVED</td>
-<td>GRAND AV</td>
-<td>MACARTHUR BL</td>
-</tr>
-<tr class="odd">
-<td>3851073</td>
-<td>0109</td>
-<td>3/24/2016 5:00:00 PM</td>
-<td>BROADSIDE</td>
-<td>Thursday</td>
-<td>false</td>
-<td>OTHER MOTOR VEHICLE</td>
-<td></td>
-<td>0</td>
-<td>0</td>
-<td>DAYLIGHT</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td>NO PEDESTRIANS INVOLVED</td>
-<td>GRAND AV</td>
-<td>BELLEVUE ST</td>
-</tr>
-<tr class="even">
-<td>3867029</td>
-<td>0109</td>
-<td>4/28/2016 3:05:00 PM</td>
-<td>BROADSIDE</td>
-<td>Thursday</td>
-<td>false</td>
-<td>OTHER MOTOR VEHICLE</td>
-<td></td>
-<td>1</td>
-<td>0</td>
-<td>DAYLIGHT</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td>NO PEDESTRIANS INVOLVED</td>
-<td>GRAND AV</td>
-<td>BAY PL</td>
-</tr>
-<tr class="odd">
-<td>3861598</td>
-<td>0109</td>
-<td>5/26/2016 9:01:00 PM</td>
-<td>REAR END</td>
-<td>Thursday</td>
-<td>false</td>
-<td>OTHER MOTOR VEHICLE</td>
-<td></td>
-<td>1</td>
-<td>0</td>
-<td>DARK-STREET LIGHTS</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td>NO PEDESTRIANS INVOLVED</td>
-<td>GRAND AV</td>
-<td>ELWOOD AV</td>
-</tr>
-<tr class="even">
-<td>3876236</td>
-<td>0109</td>
-<td>2/28/2016 9:58:00 PM</td>
-<td>REAR END</td>
-<td>Sunday</td>
-<td>false</td>
-<td>BICYCLE</td>
-<td></td>
-<td>1</td>
-<td>0</td>
-<td>DARK-STREET LIGHTS</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td></td>
-<td>GRAND AV</td>
-<td>BELLEVUE AV</td>
-</tr>
-<tr class="odd">
-<td>…</td>
-<td>…</td>
-<td>…</td>
-<td>…</td>
-<td>…</td>
-<td>…</td>
-<td>…</td>
-<td>…</td>
-<td>…</td>
-<td>…</td>
-<td>…</td>
-<td style="text-align: right;">…</td>
-<td style="text-align: right;">…</td>
-<td>…</td>
-<td>…</td>
-<td>…</td>
-</tr>
-<tr class="even">
-<td>4433647</td>
-<td>0109</td>
-<td>8/17/2024 1:50:00 AM</td>
-<td>REAR END</td>
-<td>Saturday</td>
-<td>false</td>
-<td>OTHER MOTOR VEHICLE</td>
-<td></td>
-<td>0</td>
-<td>0</td>
-<td>DARK-STREET LIGHTS</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td>NO PEDESTRIANS INVOLVED</td>
-<td>GRAND AV</td>
-<td>EL EMBARCADERO</td>
-</tr>
-<tr class="odd">
-<td>4444137</td>
-<td>0109</td>
-<td>7/21/2024 1:56:00 AM</td>
-<td>REAR END</td>
-<td>Sunday</td>
-<td>false</td>
-<td>OTHER MOTOR VEHICLE</td>
-<td></td>
-<td>0</td>
-<td>0</td>
-<td>DARK-STREET LIGHTS</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td>NO PEDESTRIANS INVOLVED</td>
-<td>GRAND AV</td>
-<td>HARRISON ST</td>
-</tr>
-<tr class="even">
-<td>4453526</td>
-<td>0109</td>
-<td>9/19/2024 2:30:00 PM</td>
-<td>SIDE SWIPE</td>
-<td>Thursday</td>
-<td>false</td>
-<td>OTHER MOTOR VEHICLE</td>
-<td></td>
-<td>1</td>
-<td>0</td>
-<td>DAYLIGHT</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td>NO PEDESTRIANS INVOLVED</td>
-<td>GRAND AV</td>
-<td>EL EMBARCADERO</td>
-</tr>
-<tr class="odd">
-<td>4470781</td>
-<td>0109</td>
-<td>10/2/2024 8:42:00 PM</td>
-<td>BROADSIDE</td>
-<td>Wednesday</td>
-<td>false</td>
-<td>BICYCLE</td>
-<td></td>
-<td>0</td>
-<td>0</td>
-<td>DARK-STREET LIGHTS</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td>NO PEDESTRIANS INVOLVED</td>
-<td>GRAND AV</td>
-<td>EMBARCADERO</td>
-</tr>
-<tr class="even">
-<td>4503408</td>
-<td>0109</td>
-<td>10/22/2024 1:52:00 AM</td>
-<td>HEAD-ON</td>
-<td>Tuesday</td>
-<td>false</td>
-<td>OTHER MOTOR VEHICLE</td>
-<td></td>
-<td>0</td>
-<td>0</td>
-<td>DAYLIGHT</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td>NO PEDESTRIANS INVOLVED</td>
-<td>GRAND AV</td>
-<td>BAY PL</td>
-</tr>
-<tr class="odd">
-<td>4510453</td>
-<td>0109</td>
-<td>11/7/2024 4:55:00 PM</td>
-<td>OTHER</td>
-<td>Thursday</td>
-<td>false</td>
-<td>BICYCLE</td>
-<td></td>
-<td>1</td>
-<td>0</td>
-<td>DAYLIGHT</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td>NO PEDESTRIANS INVOLVED</td>
-<td>GRAND AV</td>
-<td>MANDANA BL</td>
-</tr>
-<tr class="even">
-<td>4538577</td>
-<td>0109</td>
-<td>12/7/2024 8:43:00 AM</td>
-<td>SIDE SWIPE</td>
-<td>Saturday</td>
-<td>false</td>
-<td>OTHER MOTOR VEHICLE</td>
-<td></td>
-<td>1</td>
-<td>0</td>
-<td>DAYLIGHT</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td>NO PEDESTRIANS INVOLVED</td>
-<td>GRAND AV</td>
-<td>LAKE PARK AV</td>
-</tr>
-<tr class="odd">
-<td>4538433</td>
-<td>0109</td>
-<td>12/20/2024 5:58:00 PM</td>
-<td>REAR END</td>
-<td>Friday</td>
-<td>false</td>
-<td>OTHER MOTOR VEHICLE</td>
-<td></td>
-<td>1</td>
-<td>0</td>
-<td>DUSK-DAWN</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td>NO PEDESTRIANS INVOLVED</td>
-<td>GRAND AV</td>
-<td>LAKE PARK AV</td>
-</tr>
-<tr class="even">
-<td>4530278</td>
-<td>0109</td>
-<td>5/6/2024 2:45:00 AM</td>
-<td>HEAD-ON</td>
-<td>Monday</td>
-<td>false</td>
-<td>FIXED OBJECT</td>
-<td></td>
-<td>0</td>
-<td>1</td>
-<td>DARK-STREET LIGHTS</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td>NO PEDESTRIANS INVOLVED</td>
-<td>GRAND AV</td>
-<td>ELLITA AV</td>
-</tr>
-<tr class="odd">
-<td>4529778</td>
-<td>0109</td>
-<td>6/17/2024 8:11:00 AM</td>
-<td>REAR END</td>
-<td>Monday</td>
-<td>false</td>
-<td>OTHER MOTOR VEHICLE</td>
-<td></td>
-<td>0</td>
-<td>0</td>
-<td>DAYLIGHT</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td>NO PEDESTRIANS INVOLVED</td>
-<td>GRAND AV</td>
-<td>HARRISON ST</td>
-</tr>
-<tr class="even">
-<td>4528792</td>
-<td>0109</td>
-<td>11/16/2024 12:34:00 AM</td>
-<td>HEAD-ON</td>
-<td>Saturday</td>
-<td>false</td>
-<td>FIXED OBJECT</td>
-<td></td>
-<td>2</td>
-<td>0</td>
-<td>DARK-STREET LIGHTS</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td>NO PEDESTRIANS INVOLVED</td>
-<td>GRAND AV</td>
-<td>HARRISON ST</td>
-</tr>
-</tbody>
-</table>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb6"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> grand-ave-crashes</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    (tc/dataset)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    (plotly/layer-bar</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>     {:=x <span class="at">:crash-date-time</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>      :=y <span class="at">:number-injured</span>}))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<div style="height:400px;width:100%;"><script>Plotly.newPlot(document.currentScript.parentElement,
+              [{"y":["1","2","1","1","1","2","0","1","1","1","0","0","1","1","1","1","1","1","0","1","1","1","3","1","0","0","0","0","0","0","1","2","0","0","1","0","1","0","0","1","0","1","0","0","1","1","4","0","1","1","0","0","1","1","1","1","0","0","2","1","1","0","1","0","1","0","1","1","0","0","1","1","1","0","1","1","2","0","0","1","0","1","0","0","1","0","1","1","1","0","1","0","1","1","1","1","1","0","1","0","1","1","0","1","1","1","0","0","1","0","0","0","0","0","0","0","1","1","0","1","0","1","1","1","1","0","1","1","1","1","0","0","1","0","1","1","0","1","0","2","1","0","0","0","0","2","1","1","0","1","0","1","0","0","0","1","0","0","0","0","0","0","1","0","0","1","0","1","0","1","2","2","0","0","2","0","0","0","1","1","1","2","0","1","1","0","1","1","0","0","1","1","1","0","0","2","1","0","1","1","1","1","0","0","1","1","1","0","1","1","0","1","0","2","1","1","0","0","1","0","0","1","1","1","0","0","2"],"r":null,"name":"","fill":null,"mode":null,"width":null,"type":"bar","theta":null,"z":null,"lon":null,"lat":null,"x":["2016-02-27T14:05","2016-01-08T16:32","2016-02-23T07:26","2016-03-07T17:51","2016-03-26T15:24","2016-02-20T09:55","2016-03-24T17:00","2016-04-28T15:05","2016-05-26T21:01","2016-02-28T21:58","2016-09-07T09:50","2016-06-17T01:21","2016-04-09T22:51","2016-02-07T02:00","2016-04-13T05:00","2016-04-25T08:34","2016-06-18T09:59","2016-05-27T11:53","2016-07-20T18:37","2016-06-26T13:00","2016-06-30T21:40","2016-09-21T08:35","2016-08-21T18:27","2016-10-05T16:00","2016-06-22T16:17","2016-07-10T16:42","2016-10-10T17:10","2016-10-13T11:54","2016-10-12T11:27","2016-09-17T11:24","2016-08-29T17:01","2016-09-22T15:45","2016-10-18T15:05","2016-12-24T12:56","2016-12-01T10:41","2017-01-27T22:50","2017-04-02T13:28","2017-03-09T12:36","2017-02-07T04:30","2017-03-04T15:06","2017-02-02T07:34","2017-04-27T20:04","2017-04-12T01:18","2017-05-25T17:21","2017-06-08T21:26","2017-09-05T20:35","2017-05-28T18:23","2017-06-22T18:31","2017-08-31T18:02","2017-07-19T15:04","2017-07-17T09:52","2017-07-15T23:15","2017-07-18T17:31","2017-08-01T20:40","2017-07-03T17:15","2017-06-25T10:55","2017-10-23T14:30","2017-10-27T23:49","2017-10-02T17:43","2017-11-22T09:36","2017-11-06T15:37","2017-10-13T20:08","2017-12-05T16:10","2017-12-30T00:26","2017-07-22T00:56","2017-10-25T20:00","2017-12-08T20:59","2018-01-12T20:30","2018-02-27T10:00","2018-03-13T09:34","2018-03-17T21:37","2018-04-09T10:00","2018-02-04T15:52","2018-05-11T11:25","2018-02-27T15:22","2018-07-15T15:42","2018-06-16T23:55","2018-07-12T15:15","2018-07-28T23:23","2018-07-22T20:07","2018-09-09T19:10","2018-09-11T12:05","2018-09-24T19:39","2018-09-18T18:11","2018-08-14T05:17","2018-10-04T19:30","2018-12-20T12:44","2018-12-21T14:52","2019-01-11T19:34","2019-01-20T15:18","2019-02-15T18:29","2019-02-24T01:34","2019-03-25T18:02","2019-05-01T17:37","2019-05-02T15:27","2019-06-11T11:31","2019-05-01T17:37","2019-08-07T09:04","2019-07-27T17:50","2019-09-20T21:48","2019-05-23T16:54","2019-10-17T07:38","2019-11-13T16:00","2019-10-06T12:52","2019-10-29T12:43","2019-10-15T09:05","2019-08-14T10:55","2019-10-05T22:09","2019-09-19T20:17","2020-01-31T13:50","2020-03-20T12:33","2020-03-14T02:47","2020-04-09T23:43","2020-01-24T21:12","2020-06-16T12:02","2020-07-14T16:50","2020-07-08T22:06","2020-06-11T19:59","2020-06-25T21:57","2020-06-19T18:16","2020-10-20T09:22","2020-09-26T13:00","2020-10-18T13:20","2020-10-22T14:51","2020-10-23T18:07","2020-12-29T13:14","2020-10-21T09:49","2020-10-22T07:30","2020-03-26T08:47","2020-11-23T02:22","2020-11-26T11:38","2020-12-07T05:19","2021-12-26T13:20","2021-01-10T16:51","2021-02-15T16:05","2021-04-11T19:02","2021-04-28T20:59","2021-05-19T23:46","2021-02-28T18:35","2021-06-12T22:37","2021-05-14T20:25","2021-05-13T10:16","2021-06-14T10:35","2021-07-25T22:29","2021-05-22T06:35","2021-12-11T23:18","2021-10-02T19:01","2021-09-14T22:08","2021-10-13T15:02","2021-07-21T21:33","2021-12-22T06:15","2021-12-05T20:21","2021-07-11T13:25","2021-03-20T21:34","2021-12-24T22:56","2021-12-23T18:53","2021-11-15T14:10","2021-12-05T02:00","2021-09-12T17:27","2021-09-04T08:48","2022-03-10T21:52","2022-04-10T11:50","2022-02-13T20:44","2022-04-14T09:33","2022-03-28T21:50","2022-05-16T14:28","2022-04-29T16:41","2022-06-19T20:20","2022-10-12T15:20","2022-09-16T23:14","2022-05-31T17:44","2022-09-11T04:22","2022-05-25T09:08","2022-10-10T17:30","2022-10-18T22:21","2022-11-29T02:43","2022-10-26T13:23","2022-12-12T00:53","2022-07-23T01:23","2022-12-19T16:47","2022-11-16T19:05","2023-04-02T20:55","2023-03-11T02:54","2023-06-14T18:24","2023-01-16T00:30","2023-02-13T13:23","2023-02-25T23:45","2023-02-09T17:10","2023-06-01T21:04","2023-03-26T19:29","2023-04-15T15:55","2023-05-16T18:01","2023-04-24T16:56","2023-03-26T18:00","2023-07-07T19:01","2023-06-24T19:08","2023-07-23T11:30","2023-04-05T13:02","2023-05-10T12:30","2023-09-11T19:00","2023-11-26T15:51","2023-07-30T02:14","2023-11-05T08:52","2023-07-14T23:44","2023-07-24T16:36","2023-11-13T19:04","2023-11-11T17:03","2023-12-12T06:51","2024-03-05T17:29","2024-01-08T20:19","2024-03-27T18:21","2024-01-05T10:15","2024-04-21T18:15","2024-03-04T18:34","2024-05-21T12:01","2024-04-09T13:08","2024-08-17T01:50","2024-07-21T01:56","2024-09-19T14:30","2024-10-02T20:42","2024-10-22T01:52","2024-11-07T16:55","2024-12-07T08:43","2024-12-20T17:58","2024-05-06T02:45","2024-06-17T08:11","2024-11-16T00:34"],"text":null}], {"width":500,"height":400,"margin":{"t":25},"automargin":false,"plot_bgcolor":"rgb(235,235,235)","xaxis":{"gridcolor":"rgb(255,255,255)","title":"crash-date-time","showgrid":true},"yaxis":{"gridcolor":"rgb(255,255,255)","title":"number-injured","showgrid":true},"title":null}, {});</script></div>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb7"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> grand-ave-crashes</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    (ds/row-map (<span class="kw">fn</span> [row]</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>                  (<span class="kw">let</span> [date-time (<span class="at">:crash-date-time</span> row)]</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>                    (<span class="kw">assoc</span> row</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>                           <span class="at">:month-year</span> (<span class="kw">str</span> (.getYear date-time) <span class="st">"-"</span> (.getMonthValue date-time))))))</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    (tc/dataset)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    (plotly/layer-bar</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>     {:=x <span class="at">:month-year</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>      :=y <span class="at">:number-injured</span>}))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div style="height:400px;width:100%;"><script>Plotly.newPlot(document.currentScript.parentElement,
+              [{"y":["1","2","1","1","1","2","0","1","1","1","0","0","1","1","1","1","1","1","0","1","1","1","3","1","0","0","0","0","0","0","1","2","0","0","1","0","1","0","0","1","0","1","0","0","1","1","4","0","1","1","0","0","1","1","1","1","0","0","2","1","1","0","1","0","1","0","1","1","0","0","1","1","1","0","1","1","2","0","0","1","0","1","0","0","1","0","1","1","1","0","1","0","1","1","1","1","1","0","1","0","1","1","0","1","1","1","0","0","1","0","0","0","0","0","0","0","1","1","0","1","0","1","1","1","1","0","1","1","1","1","0","0","1","0","1","1","0","1","0","2","1","0","0","0","0","2","1","1","0","1","0","1","0","0","0","1","0","0","0","0","0","0","1","0","0","1","0","1","0","1","2","2","0","0","2","0","0","0","1","1","1","2","0","1","1","0","1","1","0","0","1","1","1","0","0","2","1","0","1","1","1","1","0","0","1","1","1","0","1","1","0","1","0","2","1","1","0","0","1","0","0","1","1","1","0","0","2"],"r":null,"name":"","fill":null,"mode":null,"width":null,"type":"bar","theta":null,"z":null,"lon":null,"lat":null,"x":["2016-2","2016-1","2016-2","2016-3","2016-3","2016-2","2016-3","2016-4","2016-5","2016-2","2016-9","2016-6","2016-4","2016-2","2016-4","2016-4","2016-6","2016-5","2016-7","2016-6","2016-6","2016-9","2016-8","2016-10","2016-6","2016-7","2016-10","2016-10","2016-10","2016-9","2016-8","2016-9","2016-10","2016-12","2016-12","2017-1","2017-4","2017-3","2017-2","2017-3","2017-2","2017-4","2017-4","2017-5","2017-6","2017-9","2017-5","2017-6","2017-8","2017-7","2017-7","2017-7","2017-7","2017-8","2017-7","2017-6","2017-10","2017-10","2017-10","2017-11","2017-11","2017-10","2017-12","2017-12","2017-7","2017-10","2017-12","2018-1","2018-2","2018-3","2018-3","2018-4","2018-2","2018-5","2018-2","2018-7","2018-6","2018-7","2018-7","2018-7","2018-9","2018-9","2018-9","2018-9","2018-8","2018-10","2018-12","2018-12","2019-1","2019-1","2019-2","2019-2","2019-3","2019-5","2019-5","2019-6","2019-5","2019-8","2019-7","2019-9","2019-5","2019-10","2019-11","2019-10","2019-10","2019-10","2019-8","2019-10","2019-9","2020-1","2020-3","2020-3","2020-4","2020-1","2020-6","2020-7","2020-7","2020-6","2020-6","2020-6","2020-10","2020-9","2020-10","2020-10","2020-10","2020-12","2020-10","2020-10","2020-3","2020-11","2020-11","2020-12","2021-12","2021-1","2021-2","2021-4","2021-4","2021-5","2021-2","2021-6","2021-5","2021-5","2021-6","2021-7","2021-5","2021-12","2021-10","2021-9","2021-10","2021-7","2021-12","2021-12","2021-7","2021-3","2021-12","2021-12","2021-11","2021-12","2021-9","2021-9","2022-3","2022-4","2022-2","2022-4","2022-3","2022-5","2022-4","2022-6","2022-10","2022-9","2022-5","2022-9","2022-5","2022-10","2022-10","2022-11","2022-10","2022-12","2022-7","2022-12","2022-11","2023-4","2023-3","2023-6","2023-1","2023-2","2023-2","2023-2","2023-6","2023-3","2023-4","2023-5","2023-4","2023-3","2023-7","2023-6","2023-7","2023-4","2023-5","2023-9","2023-11","2023-7","2023-11","2023-7","2023-7","2023-11","2023-11","2023-12","2024-3","2024-1","2024-3","2024-1","2024-4","2024-3","2024-5","2024-4","2024-8","2024-7","2024-9","2024-10","2024-10","2024-11","2024-12","2024-12","2024-5","2024-6","2024-11"],"text":null}], {"width":500,"height":400,"margin":{"t":25},"automargin":false,"plot_bgcolor":"rgb(235,235,235)","xaxis":{"gridcolor":"rgb(255,255,255)","title":"month-year","showgrid":true},"yaxis":{"gridcolor":"rgb(255,255,255)","title":"number-injured","showgrid":true},"title":null}, {});</script></div>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb8"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> grand-ave-crashes</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    (ds/row-map (<span class="kw">fn</span> [row]</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                  (<span class="kw">let</span> [date-time (<span class="at">:crash-date-time</span> row)]</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                    (<span class="kw">assoc</span> row</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>                           <span class="at">:year</span> (<span class="kw">str</span> (.getYear date-time))))))</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    (tc/dataset)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    (plotly/layer-bar</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>     {:=x <span class="at">:year</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>      :=y <span class="at">:number-injured</span>}))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div style="height:400px;width:100%;"><script>Plotly.newPlot(document.currentScript.parentElement,
+              [{"y":["1","2","1","1","1","2","0","1","1","1","0","0","1","1","1","1","1","1","0","1","1","1","3","1","0","0","0","0","0","0","1","2","0","0","1","0","1","0","0","1","0","1","0","0","1","1","4","0","1","1","0","0","1","1","1","1","0","0","2","1","1","0","1","0","1","0","1","1","0","0","1","1","1","0","1","1","2","0","0","1","0","1","0","0","1","0","1","1","1","0","1","0","1","1","1","1","1","0","1","0","1","1","0","1","1","1","0","0","1","0","0","0","0","0","0","0","1","1","0","1","0","1","1","1","1","0","1","1","1","1","0","0","1","0","1","1","0","1","0","2","1","0","0","0","0","2","1","1","0","1","0","1","0","0","0","1","0","0","0","0","0","0","1","0","0","1","0","1","0","1","2","2","0","0","2","0","0","0","1","1","1","2","0","1","1","0","1","1","0","0","1","1","1","0","0","2","1","0","1","1","1","1","0","0","1","1","1","0","1","1","0","1","0","2","1","1","0","0","1","0","0","1","1","1","0","0","2"],"r":null,"name":"","fill":null,"mode":null,"width":null,"type":"bar","theta":null,"z":null,"lon":null,"lat":null,"x":["2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2018","2018","2018","2018","2018","2018","2018","2018","2018","2018","2018","2018","2018","2018","2018","2018","2018","2018","2018","2018","2018","2019","2019","2019","2019","2019","2019","2019","2019","2019","2019","2019","2019","2019","2019","2019","2019","2019","2019","2019","2019","2019","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2022","2022","2022","2022","2022","2022","2022","2022","2022","2022","2022","2022","2022","2022","2022","2022","2022","2022","2022","2022","2022","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2024","2024","2024","2024","2024","2024","2024","2024","2024","2024","2024","2024","2024","2024","2024","2024","2024","2024","2024"],"text":null}], {"width":500,"height":400,"margin":{"t":25},"automargin":false,"plot_bgcolor":"rgb(235,235,235)","xaxis":{"gridcolor":"rgb(255,255,255)","title":"year","showgrid":true},"yaxis":{"gridcolor":"rgb(255,255,255)","title":"number-injured","showgrid":true},"title":null}, {});</script></div>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb9"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> grand-ave-crashes</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    (ds/row-map (<span class="kw">fn</span> [row]</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>                  (<span class="kw">let</span> [date-time (<span class="at">:crash-date-time</span> row)]</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>                    (<span class="kw">assoc</span> row</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>                           <span class="at">:year</span> (<span class="kw">str</span> (.getYear date-time))))))</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    (tc/dataset)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    (plotly/layer-bar</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>     {:=x <span class="at">:year</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>      :=y <span class="at">:number-killed</span>}))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div style="height:400px;width:100%;"><script>Plotly.newPlot(document.currentScript.parentElement,
+              [{"y":["0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","1","0","0"],"r":null,"name":"","fill":null,"mode":null,"width":null,"type":"bar","theta":null,"z":null,"lon":null,"lat":null,"x":["2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2016","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2018","2018","2018","2018","2018","2018","2018","2018","2018","2018","2018","2018","2018","2018","2018","2018","2018","2018","2018","2018","2018","2019","2019","2019","2019","2019","2019","2019","2019","2019","2019","2019","2019","2019","2019","2019","2019","2019","2019","2019","2019","2019","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2020","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2021","2022","2022","2022","2022","2022","2022","2022","2022","2022","2022","2022","2022","2022","2022","2022","2022","2022","2022","2022","2022","2022","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2023","2024","2024","2024","2024","2024","2024","2024","2024","2024","2024","2024","2024","2024","2024","2024","2024","2024","2024","2024"],"text":null}], {"width":500,"height":400,"margin":{"t":25},"automargin":false,"plot_bgcolor":"rgb(235,235,235)","xaxis":{"gridcolor":"rgb(255,255,255)","title":"year","showgrid":true},"yaxis":{"gridcolor":"rgb(255,255,255)","title":"number-killed","showgrid":true},"title":null}, {});</script></div>
 <div style="background-color:grey;height:2px;width:100%;"></div>
 <div><pre><small><small>source: notebooks/index.clj</small></small></pre></div>
 
