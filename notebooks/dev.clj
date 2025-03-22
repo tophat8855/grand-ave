@@ -14,7 +14,8 @@
              :book                {:title "Grand Ave, Oakland"}
              :clean-up-target-dir true})
 
-;; The following code is used to filter and write smaller datasets from the original crash data files.
+;; The following code is used to filter the datasets from the original crash data files to only Oakland crashes.
+;; This allows us to have lessdata to work with and to focus on the data that is relevant to our analysis.
 
 (def crash-csv-files
   "CSV files containing crash data"
