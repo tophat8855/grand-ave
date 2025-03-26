@@ -103,12 +103,7 @@
                           :longitude
                           :pedestrian-action-desc
                           :primary-road
-                          :secondary-road])
-      (ds/filter (fn [row]
-                   (or (some #(clojure.string/includes? (:primary-road row) %)
-                             telegraph-intersections-of-interest)
-                       (some #(clojure.string/includes? (:secondary-road row) %)
-                             telegraph-intersections-of-interest))))))
+                          :secondary-road])))
 
 (def telegraph-ave-crashes
   (-> (load-and-combine-csvs crash-csv-files)
@@ -136,6 +131,18 @@
                        (some #(clojure.string/includes? (:secondary-road row) %)
                              telegraph-intersections-of-interest))))))
 
+;; ## Injuries in Oakland, over time (Including Telegraph), by month
+(-> oakland-city-crashes
+    (ds/row-map (fn [row]
+                  (let [date-time (:crash-date-time row)]
+                    (assoc row
+                           :month-year (str (.getYear date-time) "-" (.getMonthValue date-time))))))
+    (tc/dataset)
+    (plotly/layer-bar
+     {:=x :month-year
+      :=y :number-injured}))
+
+;; ## Injuries on Telegraph, over time, by month
 (-> telegraph-ave-crashes
     (ds/row-map (fn [row]
                   (let [date-time (:crash-date-time row)]
@@ -146,6 +153,20 @@
      {:=x :month-year
       :=y :number-injured}))
 
+
+;; ## Injuries in Oakland, over time, by year
+(-> oakland-city-crashes
+    (ds/row-map (fn [row]
+                  (let [date-time (:crash-date-time row)]
+                    (assoc row
+                           :year (str (.getYear date-time))))))
+    (tc/dataset)
+    (plotly/layer-bar
+     {:=x :year
+      :=y :number-injured}))
+
+
+;; ## Injuries on Telegraph, over time, by year
 (-> telegraph-ave-crashes
     (ds/row-map (fn [row]
                   (let [date-time (:crash-date-time row)]
@@ -156,6 +177,45 @@
      {:=x :year
       :=y :number-injured}))
 
+;; Line chart depicting number of crashes. Oakland is one line and Telegraph is another line
+(-> oakland-city-crashes
+    (ds/row-map (fn [row]
+                  (let [date-time (:crash-date-time row)]
+                    (assoc row
+                           :year (str (.getYear date-time))))))
+    (tc/dataset)
+    (tc/group-by [:year])
+    (tc/aggregate {:count tc/row-count})
+    (plotly/layer-line
+     {:=x :year
+      :=y :count
+      :=mark-color "purple"}))
+
+(-> telegraph-ave-crashes
+    (ds/row-map (fn [row]
+                  (let [date-time (:crash-date-time row)]
+                    (assoc row
+                           :year (str (.getYear date-time))))))
+    (tc/dataset)
+    (tc/group-by [:year])
+    (tc/aggregate {:count tc/row-count})
+    (plotly/layer-line
+     {:=x :year
+      :=y :count
+      :=mark-color "red"}))
+
+;; ## Killed in Oakland, over time, by year
+(-> oakland-city-crashes
+    (ds/row-map (fn [row]
+                   (let [date-time (:crash-date-time row)]
+                     (assoc row
+                           :year (str (.getYear date-time))))))
+    (tc/dataset)
+    (plotly/layer-bar
+     {:=x :year
+       :=y :number-killed}))
+
+;; ## Killed on Telegraph, over time, by year
 (-> telegraph-ave-crashes
     (ds/row-map (fn [row]
                   (let [date-time (:crash-date-time row)]
@@ -166,6 +226,7 @@
      {:=x :year
       :=y :number-killed}))
 
+;; ## What drivers are crashing into, over time, on Telegraph
 ;; Plotting what drivers are crashing into, over time
 (-> telegraph-ave-crashes
     (ds/row-map (fn [row]
