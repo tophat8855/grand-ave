@@ -81,9 +81,8 @@
 (defn filter-related-data [file-path collision-ids]
   (-> file-path
       (ds/->dataset {:key-fn csk/->kebab-case-keyword})
-      spy
       (ds/filter-column
-       :collision-id (spy collision-ids))
+       :collision-id collision-ids)
       (ds/write! (str "notebooks/datasets/" (last (clojure.string/split file-path #"/"))))))
 
 (defn process-related-files [csv-files collision-ids]

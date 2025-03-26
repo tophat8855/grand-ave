@@ -86,6 +86,30 @@
                       file-paths)]
     (apply ds/concat datasets)))
 
+(def oakland-city-crashes
+  (-> (load-and-combine-csvs crash-csv-files)
+      (ds/select-columns [:collision-id
+                          :ncic-code
+                          :crash-date-time
+                          :collision-type-description
+                          :day-of-week
+                          :is-highway-related
+                          :motor-vehicle-involved-with-desc
+                          :motor-vehicle-involved-with-other-desc
+                          :number-injured
+                          :number-killed
+                          :lighting-description
+                          :latitude
+                          :longitude
+                          :pedestrian-action-desc
+                          :primary-road
+                          :secondary-road])
+      (ds/filter (fn [row]
+                   (or (some #(clojure.string/includes? (:primary-road row) %)
+                             telegraph-intersections-of-interest)
+                       (some #(clojure.string/includes? (:secondary-road row) %)
+                             telegraph-intersections-of-interest))))))
+
 (def telegraph-ave-crashes
   (-> (load-and-combine-csvs crash-csv-files)
       (ds/select-columns [:collision-id
@@ -111,12 +135,6 @@
                              telegraph-intersections-of-interest)
                        (some #(clojure.string/includes? (:secondary-road row) %)
                              telegraph-intersections-of-interest))))))
-
-(-> telegraph-ave-crashes
-    (tc/dataset)
-    (plotly/layer-bar
-     {:=x :crash-date-time
-      :=y :number-injured}))
 
 (-> telegraph-ave-crashes
     (ds/row-map (fn [row]
@@ -147,6 +165,42 @@
     (plotly/layer-bar
      {:=x :year
       :=y :number-killed}))
+
+;; Plotting what drivers are crashing into, over time
+(-> telegraph-ave-crashes
+    (ds/row-map (fn [row]
+                  (let [date-time (:crash-date-time row)]
+                    (assoc row
+                           :year (str (.getYear date-time))))))
+    (tc/dataset)
+    (tc/group-by [:motor-vehicle-involved-with-desc :year ])
+    (tc/aggregate {:count tc/row-count})
+    ((fn [df]
+       (let [years          (distinct (tc/column df :year))
+             other-entities (filter some? (distinct (tc/column df :motor-vehicle-involved-with-desc)))
+             data           (reduce (fn [acc typ]
+                                      (assoc acc (keyword (csk/->kebab-case typ))
+                                   (map (fn [year]
+                                          (-> df
+                                              (tc/select-rows #(and (= (:year %) year)
+                                                                    (= (:motor-vehicle-involved-with-desc %) typ)))
+                                              (tc/column :count)
+                                              first
+                                              (or 0)))
+                                        years)))
+                                    {:x-axis-data years}
+                          other-entities)]
+         (kind/echarts
+          {:legend {:data (keys (dissoc data :x-axis-data))}
+           :xAxis  {:type "category" :data years}
+           :yAxis  {:type "value"}
+           :series (map (fn [entity]
+                          {:name entity
+                           :type "bar"
+                           :stack "total"
+                           :data (get data (keyword (csk/->kebab-case entity)))})
+                        (keys (dissoc data :x-axis-data)))})))))
+
 
 ;; # Grand Ave Crash Data
 
