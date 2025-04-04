@@ -69,9 +69,11 @@
    "notebooks/datasets/2025injuredwitnesspassengers.csv"])
 
 (def telegraph-intersections-of-interest
-  #{"19TH" "20TH" "21ST" "22ND" "23RD" "24TH" "25TH" "26TH"
-    "27TH" "28TH" "29TH" "30TH" "31ST" "32ND" "33RD" "34TH"
-    "35TH" "36TH" "37TH" "38TH" "39TH" "40TH" "41ST"})
+  #{"19TH" "WILLIAM" "20TH" "BERKLEY" "21ST" "22ND"
+    "GRAND" "23RD" "24TH" "25TH" "SYCAMORE" "26TH"
+    "MERRICMAC" "27TH" "28TH" "29TH" "30TH" "31ST"
+    "32ND" "HAWTHORNE" "33RD" "34TH" "MACARTHUR" "35TH"
+    "36TH" "37TH" "38TH" "APGAR" "39TH" "40TH" "41ST"})
 
 ^{:kindly/hide-code true}
 (defn load-and-combine-csvs [file-paths]
@@ -106,23 +108,7 @@
                           :secondary-road])))
 
 (def telegraph-ave-crashes
-  (-> (load-and-combine-csvs crash-csv-files)
-      (ds/select-columns [:collision-id
-                          :ncic-code
-                          :crash-date-time
-                          :collision-type-description
-                          :day-of-week
-                          :is-highway-related
-                          :motor-vehicle-involved-with-desc
-                          :motor-vehicle-involved-with-other-desc
-                          :number-injured
-                          :number-killed
-                          :lighting-description
-                          :latitude
-                          :longitude
-                          :pedestrian-action-desc
-                          :primary-road
-                          :secondary-road])
+  (-> oakland-city-crashes
       (ds/filter #(clojure.string/includes? (or (:primary-road %)
                                                 (:secondary-road %)) "TELEGRAPH"))
       (ds/filter (fn [row]
@@ -161,10 +147,12 @@
                     (assoc row
                            :year (str (.getYear date-time))))))
     (tc/dataset)
+    (tc/group-by :year)
+    (tc/aggregate {:number-injured-sum (fn [rows] (reduce + (spy (map :number-injured (:data rows)))))})
+    spy
     (plotly/layer-bar
      {:=x :year
-      :=y :number-injured}))
-
+      :=y :number-injured-sum}))
 
 ;; ## Injuries on Telegraph, over time, by year
 (-> telegraph-ave-crashes
@@ -270,7 +258,6 @@
     "LENOX" "LEE" "PERKINS" "ELLITA" "STATEN"
     "EUCLID" "EMBARCADERO" "MACARTHUR" "LAKE PARK"
     "SANTA CLARA" "ELWOOD" "MANDANA"})
-
 
 (def grand-ave-crashes
   (-> (load-and-combine-csvs crash-csv-files)

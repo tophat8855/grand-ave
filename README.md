@@ -22,7 +22,8 @@ This Clay Notebook project is designed to process and analyze California's crash
 - Define the Telegraph Ave project (what section of the street do we want to look at?)
 - Look at Telegraph Ave before/after the project
 
-What might be difficult to accomplish in the time frame?
+
+### What might be difficult to accomplish in the time frame?
 
 Are we still helpful for my friends?
 What might be the story here?
@@ -43,3 +44,5 @@ Given a point in the city- open an iframe with a street view. usability of the s
 
 Local questions?
 The story is the important part.
+
+Can we use zipcde or neighborhood to narrow down? School zones? SR2S? Maybe ask them?
