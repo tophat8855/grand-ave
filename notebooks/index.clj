@@ -28,7 +28,7 @@
 
 ^{:kindly/hide-code true}
 (def crash-csv-files
-  ["notebooks/datasets/2015crashes.csv"
+  [#_"notebooks/datasets/2015crashes.csv"
    "notebooks/datasets/2016crashes.csv"
    "notebooks/datasets/2017crashes.csv"
    "notebooks/datasets/2018crashes.csv"
@@ -38,11 +38,11 @@
    "notebooks/datasets/2022crashes.csv"
    "notebooks/datasets/2023crashes.csv"
    "notebooks/datasets/2024crashes.csv"
-   "notebooks/datasets/2025crashes.csv"])
+   #_"notebooks/datasets/2025crashes.csv"])
 
 ^{:kindly/hide-code true}
 (def parties-csv-files
-  ["notebooks/datasets/2015parties.csv"
+  [#_"notebooks/datasets/2015parties.csv"
    "notebooks/datasets/2016parties.csv"
    "notebooks/datasets/2017parties.csv"
    "notebooks/datasets/2018parties.csv"
@@ -52,11 +52,11 @@
    "notebooks/datasets/2022parties.csv"
    "notebooks/datasets/2023parties.csv"
    "notebooks/datasets/2024parties.csv"
-   "notebooks/datasets/2025parties.csv"])
+   #_"notebooks/datasets/2025parties.csv"])
 
 ^{:kindly/hide-code true}
 (def injured-witness-passengers-csv-files
-  ["notebooks/datasets/2015injuredwitnesspassengers.csv"
+  [#_"notebooks/datasets/2015injuredwitnesspassengers.csv"
    "notebooks/datasets/2016injuredwitnesspassengers.csv"
    "notebooks/datasets/2017injuredwitnesspassengers.csv"
    "notebooks/datasets/2018injuredwitnesspassengers.csv"
@@ -66,7 +66,7 @@
    "notebooks/datasets/2022injuredwitnesspassengers.csv"
    "notebooks/datasets/2023injuredwitnesspassengers.csv"
    "notebooks/datasets/2024injuredwitnesspassengers.csv"
-   "notebooks/datasets/2025injuredwitnesspassengers.csv"])
+  #_ "notebooks/datasets/2025injuredwitnesspassengers.csv"])
 
 (def telegraph-intersections-of-interest
   #{"19TH" "WILLIAM" "20TH" "BERKLEY" "21ST" "22ND"
@@ -192,6 +192,34 @@
      {:=x :year
       :=y :count
       :=mark-color "red"}))
+
+(let [oakland-data (-> oakland-city-crashes
+                       (ds/row-map (fn [row]
+                                     (let [date-time (:crash-date-time row)]
+                                       (assoc row
+                                              :year (str (.getYear date-time))
+                                              :source "Oakland"))))
+                       (tc/dataset)
+                       (tc/group-by [:year :source])
+                       (tc/aggregate {:count tc/row-count}))
+      telegraph-data (-> telegraph-ave-crashes
+                         (ds/row-map (fn [row]
+                                       (let [date-time (:crash-date-time row)]
+                                         (assoc row
+                                                :year (str (.getYear date-time))
+                                                :source "Telegraph"))))
+                         (tc/dataset)
+                         (tc/group-by [:year :source])
+                         (tc/aggregate {:count tc/row-count}))
+      combined-data (tc/concat oakland-data telegraph-data)]
+  (plotly/layer-line
+   combined-data
+   {:=x :year
+    :=y :count
+    :=color :source
+    :=layout {:title "Number of Crashes Over Years"
+              :xaxis {:title "Year"}
+              :yaxis {:title "Number of Crashes"}}}))
 
 ;; ## Killed in Oakland, over time, by year
 (-> oakland-city-crashes
