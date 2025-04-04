@@ -148,10 +148,9 @@
                            :year (str (.getYear date-time))))))
     (tc/dataset)
     (tc/group-by :year)
-    (tc/aggregate {:number-injured-sum (fn [rows] (reduce + (spy (map :number-injured (:data rows)))))})
-    spy
+    (tc/aggregate {:number-injured-sum #(reduce + (map (fn [v] (if (nil? v) 0 (Integer. v))) (% :number-injured)))})
     (plotly/layer-bar
-     {:=x :year
+     {:=x :$group-name
       :=y :number-injured-sum}))
 
 ;; ## Injuries on Telegraph, over time, by year
@@ -161,9 +160,11 @@
                     (assoc row
                            :year (str (.getYear date-time))))))
     (tc/dataset)
+    (tc/group-by :year)
+    (tc/aggregate {:number-injured-sum #(reduce + (map (fn [v] (if (nil? v) 0 (Integer. v))) (% :number-injured)))})
     (plotly/layer-bar
-     {:=x :year
-      :=y :number-injured}))
+     {:=x :$:group-name
+      :=y :number-injured-sum}))
 
 ;; Line chart depicting number of crashes. Oakland is one line and Telegraph is another line
 (-> oakland-city-crashes
