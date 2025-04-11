@@ -46,3 +46,35 @@ Local questions?
 The story is the important part.
 
 Can we use zipcde or neighborhood to narrow down? School zones? SR2S? Maybe ask them?
+
+## Evaluating Telegraph Ave’s Road Diet Impact
+
+    How did crash rates change on Telegraph Ave before and after the lane reduction?
+
+    Did the number of injuries and fatalities decrease after the redesign?
+
+    What types of crashes (e.g., pedestrian-involved, cyclist-involved, rear-end collisions) were most affected?
+
+    Did crash severity change (e.g., more minor crashes, fewer fatal ones)?
+
+## Understanding Grand Ave’s Current Safety Issues
+
+    What are the most common types of crashes on Grand Ave?
+
+    Who is most affected (age groups, pedestrian/cyclist involvement, vehicle occupants)?
+
+    What locations along Grand Ave see the most crashes?
+
+    Are there trends in crash timing (e.g., peak hours, weekends vs. weekdays)?
+
+    How do crash rates on Grand Ave compare to pre-road-diet Telegraph?
+
+## Comparing Telegraph and Grand Ave
+
+    How do total crash numbers compare between the two corridors?
+
+    Are the types of crashes similar, or does one street see different patterns?
+
+    Who is most at risk on each street?
+
+    Based on Telegraph’s data, what safety improvements could be predicted for Grand Ave if a similar lane reduction were implemented?

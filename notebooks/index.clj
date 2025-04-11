@@ -6,6 +6,7 @@
             [scicloj.kindly.v4.kind :as kind]
             [scicloj.tableplot.v1.plotly :as plotly]
             [scicloj.tableplot.v1.hanami :as hanami]
+            [scicloj.tableplot.v1.transpile :as transpile]
             [tablecloth.api :as tc]
             [tablecloth.column.api :as tcc]
             [tech.v3.dataset :as ds]))
@@ -151,7 +152,10 @@
     (tc/aggregate {:number-injured-sum #(reduce + (map (fn [v] (if (nil? v) 0 (Integer. v))) (% :number-injured)))})
     (plotly/layer-bar
      {:=x :$group-name
-      :=y :number-injured-sum}))
+      :=y :number-injured-sum
+      :=layout {:title "Number of Injuries Over Years"
+                :xaxis {:title "Year"}
+                :yaxis {:title "Number of Injuries"}}}))
 
 ;; ## Injuries on Telegraph, over time, by year
 (-> telegraph-ave-crashes
@@ -163,8 +167,11 @@
     (tc/group-by :year)
     (tc/aggregate {:number-injured-sum #(reduce + (map (fn [v] (if (nil? v) 0 (Integer. v))) (% :number-injured)))})
     (plotly/layer-bar
-     {:=x :$:group-name
-      :=y :number-injured-sum}))
+     {:=x :$group-name
+      :=y :number-injured-sum
+      :=layout {:title "Number of Injuries Over Years"
+                :xaxis {:title "Year"}
+                :yaxis {:title "Number of Injuries"}}}))
 
 ;; Line chart depicting number of crashes. Oakland is one line and Telegraph is another line
 (-> oakland-city-crashes
@@ -193,6 +200,8 @@
       :=y :count
       :=mark-color "red"}))
 
+;; combined data for both oakland and telegraph for crashes
+
 (let [oakland-data (-> oakland-city-crashes
                        (ds/row-map (fn [row]
                                      (let [date-time (:crash-date-time row)]
@@ -201,7 +210,9 @@
                                               :source "Oakland"))))
                        (tc/dataset)
                        (tc/group-by [:year :source])
-                       (tc/aggregate {:count tc/row-count}))
+                       (tc/aggregate {:count tc/row-count})
+                       (tc/add-column :normalized-count (fn [ds]
+                                                          (tcc// (:count ds) (float (first (:count ds)))))))
       telegraph-data (-> telegraph-ave-crashes
                          (ds/row-map (fn [row]
                                        (let [date-time (:crash-date-time row)]
@@ -210,16 +221,52 @@
                                                 :source "Telegraph"))))
                          (tc/dataset)
                          (tc/group-by [:year :source])
-                         (tc/aggregate {:count tc/row-count}))
+                         (tc/aggregate {:count tc/row-count})
+                         (tc/add-column :normalized-count (fn [ds]
+                                                            (tcc// (:count ds) (float (first (:count ds)))))))
       combined-data (tc/concat oakland-data telegraph-data)]
   (plotly/layer-line
    combined-data
    {:=x :year
-    :=y :count
+    :=y :normalized-count
     :=color :source
     :=layout {:title "Number of Crashes Over Years"
               :xaxis {:title "Year"}
               :yaxis {:title "Number of Crashes"}}}))
+
+(def oakland-crashes-pedestrian-involved
+  (-> oakland-city-crashes
+      (ds/filter (fn [row]
+                   (not (or (nil? (:pedestrian-action-desc row))
+                            (= "NO PEDESTRIANS INVOLVED" (:pedestiran-action-desc row))))))))
+
+(def telegraph-crashes-pedestrian-involved
+  (-> telegraph-ave-crashes
+      (ds/filter (fn [row]
+                   (not (or (nil? (:pedestrian-action-desc row))
+                            (= "NO PEDESTRIANS INVOLVED" (:pedestiran-action-desc row))))))))
+
+;; ## Oakland Crashes with pedestrians involved
+(-> oakland-crashes-pedestrian-involved
+    (ds/row-map (fn [row]
+                  (let [date-time (:crash-date-time row)]
+                    (assoc row
+                           :year (str (.getYear date-time))))))
+    (tc/dataset)
+    (plotly/layer-bar
+     {:=x :year
+      :=y :number-injured}))
+
+;; ## Telegraph Crashes with pedestrians involved
+(-> telegraph-crashes-pedestrian-involved
+    (ds/row-map (fn [row]
+                  (let [date-time (:crash-date-time row)]
+                    (assoc row
+                           :year (str (.getYear date-time))))))
+    (tc/dataset)
+    (plotly/layer-bar
+     {:=x :year
+      :=y :number-injured}))
 
 ;; ## Killed in Oakland, over time, by year
 (-> oakland-city-crashes
@@ -349,3 +396,20 @@
     (plotly/layer-bar
      {:=x :year
       :=y :number-killed}))
+
+(def grand-crashes-pedestrian-involved
+  (-> grand-ave-crashes
+      (ds/filter (fn [row]
+                   (not (or (nil? (:pedestrian-action-desc row))
+                            (= "NO PEDESTRIANS INVOLVED" (:pedestiran-action-desc row))))))))
+
+(-> grand-crashes-pedestrian-involved
+    (ds/row-map (fn [row]
+                  (let [date-time (:crash-date-time row)]
+                    (assoc row
+                           :year (str (.getYear date-time))))))
+    (tc/dataset)
+    (plotly/layer-bar
+     {:=x :year
+      :=y :number-injured}))
+
