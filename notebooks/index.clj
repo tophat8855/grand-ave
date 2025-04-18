@@ -20,11 +20,14 @@
   (println x)
   x)
 
-
 ;; # Grand Ave, Oakland, CA
 ;; On Feb 3, 2025, Michael Burawoy was killed in the crosswalk by a speeding driver in a hit-and-run.
 ;; The crosswalk crosses Grande Ave, connecting the Adam's Point neighborhood to Lake Merritt:
 ;; the grand jewel of Oakland.
+
+;; INSERT image of crosswalk
+
+;; INSERT map of Grand Ave along Lake Merrit to show the landscape.
 
 ;; The City of Oakland is currently looking re-paving Grand Ave, and the local neighborhoods
 ;; and street safety groups are hoping that the re-paving will also include upgrades in the
@@ -37,7 +40,6 @@
 (kind/image {:src "notebooks/images/grand-heatmap.jpg"
              :alt "Heat Map of Grand Ave, Oakland, CA"
              :caption "Grand Ave Heatmap"})
-
 
 (def grand-intersections-of-interest
   {"HARRISON"    {:lat 37.8109389 :long -122.2648802}
@@ -65,6 +67,7 @@
                           :collision-type-description
                           :day-of-week
                           :is-highway-related
+                          :motor-vehicle-involved-with-code
                           :motor-vehicle-involved-with-desc
                           :motor-vehicle-involved-with-other-desc
                           :number-injured
@@ -75,15 +78,127 @@
                           :pedestrian-action-desc
                           :primary-road
                           :secondary-road])
-      (tc/select-rows #(clojure.string/includes? (or (:primary-road %)
+      (ds/filter #(clojure.string/includes? (or (:primary-road %)
                                                 (:secondary-road %)) "GRAND"))
-      (tc/select-rows (fn [row]
-                        (or (some #(clojure.string/includes? (:primary-road row) %)
-                                  (keys grand-intersections-of-interest))
-                            (some #(clojure.string/includes? (:secondary-road row) %)
-                                  (keys grand-intersections-of-interest)))))
+      (ds/filter (fn [row]
+                   (or (some #(clojure.string/includes? (:primary-road row) %)
+                             (keys grand-intersections-of-interest))
+                       (some #(clojure.string/includes? (:secondary-road row) %)
+                             (keys grand-intersections-of-interest)))))
       #_  (ds/group-by-column :secondary-road)
       ))
+
+;; Types of crashes since 2017
+(-> grand-ave-crashes
+    (tc/group-by [:motor-vehicle-involved-with-desc])
+    (tc/aggregate {:count tc/row-count})
+    ((fn [df]
+       (let [data (map (fn [row]
+                         {:name (first row)
+                          :value (second row)})
+                  (tc/rows df))]
+         (kind/echarts
+          {:title {:text "Types of Crashes on Grand Ave 2017-2024"}
+           :series {:type   "pie"
+                    :data   data}})))))
+
+
+;; Types of crashes over time
+(-> grand-ave-crashes
+    (ds/row-map (fn [row]
+                  (let [date-time (:crash-date-time row)]
+                    (assoc row
+                           :year (str (.getYear date-time))))))
+    (tc/group-by [:motor-vehicle-involved-with-desc :year ])
+    (tc/aggregate {:count tc/row-count})
+    ((fn [df]
+       (let [years          (distinct (tc/column df :year))
+             other-entities (filter some? (distinct (tc/column df :motor-vehicle-involved-with-desc)))
+             data           (reduce (fn [acc typ]
+                                      (assoc acc (keyword (csk/->kebab-case typ))
+                                   (map (fn [year]
+                                          (-> df
+                                              (tc/select-rows #(and (= (:year %) year)
+                                                                    (= (:motor-vehicle-involved-with-desc %) typ)))
+                                              (tc/column :count)
+                                              first
+                                              (or 0)))
+                                        years)))
+                                    {:x-axis-data years}
+                          other-entities)]
+         (kind/echarts
+          {:legend {:data (keys (dissoc data :x-axis-data))}
+           :xAxis  {:type "category" :data years}
+           :yAxis  {:type "value"}
+           :series (map (fn [entity]
+                          {:name entity
+                           :type "bar"
+                           :stack "total"
+                           :data (get data (keyword (csk/->kebab-case entity)))})
+                        (keys (dissoc data :x-axis-data)))})))))
+
+(def ped-and-bike-codes
+  "B is ped, G is bicycle"
+  #{"B" "G"}) 
+
+(def grand-ave-crashes-with-peds-and-cyclists
+  (-> grand-ave-crashes
+      (tc/select-rows (fn [row]
+                        (ped-and-bike-codes (:motor-vehicle-involved-with-code row))))))
+
+(-> grand-ave-crashes-with-peds-and-cyclists
+    (ds/row-map (fn [row]
+                  (let [date-time (:crash-date-time row)]
+                    (assoc row
+                           :year (str (.getYear date-time))))))
+    (tc/group-by :year)
+    (tc/aggregate {:number-injured-sum #(reduce + (map (fn [v]
+                                                         (if (nil? v)
+                                                           0
+                                                           (Integer. v)))
+                                                       (% :number-injured)))})
+    (plotly/layer-bar
+    {:=x :$group-name
+       :=y :number-injured-sum
+       :=layout {:title "Number of Injuries Over Years"
+                 :xaxis {:title "Year"}
+                 :yaxis {:title "Number of Injuries"}}}))
+
+(-> grand-ave-crashes-with-peds-and-cyclists
+    (ds/row-map (fn [row]
+                  (let [date-time (:crash-date-time row)]
+                    (assoc row
+                           :year (str (.getYear date-time))))))
+    (tc/group-by [:motor-vehicle-involved-with-desc :year ])
+    (tc/aggregate {:count tc/row-count})
+    ((fn [df]
+       (let [years          (distinct (tc/column df :year))
+             other-entities (filter some? (distinct (tc/column df :motor-vehicle-involved-with-desc)))
+             data           (reduce (fn [acc typ]
+                                      (assoc acc (keyword (csk/->kebab-case typ))
+                                   (map (fn [year]
+                                          (-> df
+                                              (tc/select-rows #(and (= (:year %) year)
+                                                                    (= (:motor-vehicle-involved-with-desc %) typ)))
+                                              (tc/column :count)
+                                              first
+                                              (or 0)))
+                                        years)))
+                                    {:x-axis-data years}
+                          other-entities)]
+         (kind/echarts
+          {:legend {:data (keys (dissoc data :x-axis-data))}
+           :xAxis  {:type "category" :data years}
+           :yAxis  {:type "value"}
+           :series (map (fn [entity]
+                          {:name entity
+                           :type "bar"
+                           :stack "total"
+                           :data (get data (keyword (csk/->kebab-case entity)))})
+                        (keys (dissoc data :x-axis-data)))})))))
+
+;; TODO: Can we show a map of which intersections the injuries are happening on?
+
 
 
 ;; # Telegraph Ave Crash Data
@@ -462,19 +577,3 @@
     (plotly/layer-bar
      {:=x :year
       :=y :number-killed}))
-
-(def grand-crashes-pedestrian-involved
-  (-> grand-ave-crashes
-      (ds/filter (fn [row]
-                   (not (or (nil? (:pedestrian-action-desc row))
-                            (= "NO PEDESTRIANS INVOLVED" (:pedestiran-action-desc row))))))))
-
-(-> grand-crashes-pedestrian-involved
-    (ds/row-map (fn [row]
-                  (let [date-time (:crash-date-time row)]
-                    (assoc row
-                           :year (str (.getYear date-time))))))
-    (tc/dataset)
-    (plotly/layer-bar
-     {:=x :year
-      :=y :number-injured}))
