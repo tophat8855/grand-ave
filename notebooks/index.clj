@@ -20,6 +20,72 @@
   (println x)
   x)
 
+
+;; # Grand Ave, Oakland, CA
+;; On Feb 3, 2025, Michael Burawoy was killed in the crosswalk by a speeding driver in a hit-and-run.
+;; The crosswalk crosses Grande Ave, connecting the Adam's Point neighborhood to Lake Merritt:
+;; the grand jewel of Oakland.
+
+;; The City of Oakland is currently looking re-paving Grand Ave, and the local neighborhoods
+;; and street safety groups are hoping that the re-paving will also include upgrades in the
+;; pedestrian and bicycle infrastructure so that more neighbors are not lost on this street.
+
+;; Let's look at Grand Ave, from Harrison to Mandana.
+
+;; NOTE: insert map similar to this one, here:
+
+(kind/image {:src "notebooks/images/grand-heatmap.jpg"
+             :alt "Heat Map of Grand Ave, Oakland, CA"
+             :caption "Grand Ave Heatmap"})
+
+
+(def grand-intersections-of-interest
+  {"HARRISON"    {:lat 37.8109389 :long -122.2648802}
+   "BAY"         {:lat 37.8105517 :long -122.2632057}
+   "PARK VIEW"   {:lat 37.8097245 :long -122.2607476}
+   "BELLEVUE"    {:lat 37.8097757 :long -122.2620034}
+   "LENOX"       {:lat 37.8092907 :long -122.2610871}
+   "LEE"         {:lat 37.8091254 :long -122.2585415}
+   "PERKINS"     {:lat 37.8091058 :long -122.2574318}
+   "ELLITA"      {:lat 37.8089329 :long -122.2575731}
+   "STATEN"      {:lat 37.8087855 :long -122.2564191}
+   "EUCLID"      {:lat 37.8086043 :long -122.2542574}
+   "EMBARCADERO" {:lat 37.8093863 :long -122.25235}
+   "MACARTHUR"   {:lat 37.8101499 :long -122.2513041}
+   "LAKE PARK"   {:lat 37.8108553 :long -122.249266}
+   "SANTA CLARA" {:lat 37.8118568 :long -122.2503111}
+   "ELWOOD"      {:lat 37.8136874 :long -122.2491843}
+   "MANDANA"     {:lat 37.8142519 :long -122.2488258}})
+
+(def grand-ave-crashes
+  (-> (load-and-combine-csvs crash-csv-files)
+      (ds/select-columns [:collision-id
+                          :ncic-code
+                          :crash-date-time
+                          :collision-type-description
+                          :day-of-week
+                          :is-highway-related
+                          :motor-vehicle-involved-with-desc
+                          :motor-vehicle-involved-with-other-desc
+                          :number-injured
+                          :number-killed
+                          :lighting-description
+                          :latitude
+                          :longitude
+                          :pedestrian-action-desc
+                          :primary-road
+                          :secondary-road])
+      (tc/select-rows #(clojure.string/includes? (or (:primary-road %)
+                                                (:secondary-road %)) "GRAND"))
+      (tc/select-rows (fn [row]
+                        (or (some #(clojure.string/includes? (:primary-road row) %)
+                                  (keys grand-intersections-of-interest))
+                            (some #(clojure.string/includes? (:secondary-road row) %)
+                                  (keys grand-intersections-of-interest)))))
+      #_  (ds/group-by-column :secondary-road)
+      ))
+
+
 ;; # Telegraph Ave Crash Data
 ;; During 2020-2022, Telegraph Ave, from 19th St to 41st St was re-worked with pedestrians, bicyclists, and bus-riders in mind.
 ;; This included reducing the number of lanes for cars, adding bulbouts, bike lanes, and bus loading islands.
@@ -236,15 +302,15 @@
 
 (def oakland-crashes-pedestrian-involved
   (-> oakland-city-crashes
-      (ds/filter (fn [row]
-                   (not (or (nil? (:pedestrian-action-desc row))
-                            (= "NO PEDESTRIANS INVOLVED" (:pedestiran-action-desc row))))))))
+      (tc/select-rows (fn [{:keys [pedestrian-action-desc]}]
+                        (some-> pedestrian-action-desc
+                                (not= "NO PEDESTRIANS INVOLVED"))))))
 
 (def telegraph-crashes-pedestrian-involved
   (-> telegraph-ave-crashes
-      (ds/filter (fn [row]
-                   (not (or (nil? (:pedestrian-action-desc row))
-                            (= "NO PEDESTRIANS INVOLVED" (:pedestiran-action-desc row))))))))
+      (tc/select-rows (fn [{:keys [pedestrian-action-desc]}]
+                        (some-> pedestrian-action-desc
+                                (not= "NO PEDESTRIANS INVOLVED"))))))
 
 ;; ## Oakland Crashes with pedestrians involved
 (-> oakland-crashes-pedestrian-involved
@@ -335,7 +401,7 @@
     "EUCLID" "EMBARCADERO" "MACARTHUR" "LAKE PARK"
     "SANTA CLARA" "ELWOOD" "MANDANA"})
 
-(def grand-ave-crashes
+#_(def grand-ave-crashes
   (-> (load-and-combine-csvs crash-csv-files)
       (ds/select-columns [:collision-id
                           :ncic-code
@@ -412,4 +478,3 @@
     (plotly/layer-bar
      {:=x :year
       :=y :number-injured}))
-
