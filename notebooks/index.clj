@@ -20,6 +20,62 @@
   (println x)
   x)
 
+^{:kindly/hide-code true}
+(defn load-and-combine-csvs [file-paths]
+  (let [datasets (map #(ds/->dataset % {:key-fn    csk/->kebab-case-keyword
+                                        :parser-fn {:collision-id       :integer
+                                                    :crash-date-time    :local-date-time
+                                                    :ncic-code          :integer
+                                                    :is-highway-related :boolean
+                                                    :is-tow-away        :boolean
+                                                    :number-injured     :integer
+                                                    :number-killed      :integer}})
+                      file-paths)]
+    (apply ds/concat datasets)))
+
+^{:kindly/hide-code true}
+(def crash-csv-files
+  [#_"notebooks/datasets/2015crashes.csv"
+   "notebooks/datasets/2016crashes.csv"
+   "notebooks/datasets/2017crashes.csv"
+   "notebooks/datasets/2018crashes.csv"
+   "notebooks/datasets/2019crashes.csv"
+   "notebooks/datasets/2020crashes.csv"
+   "notebooks/datasets/2021crashes.csv"
+   "notebooks/datasets/2022crashes.csv"
+   "notebooks/datasets/2023crashes.csv"
+   "notebooks/datasets/2024crashes.csv"
+   #_"notebooks/datasets/2025crashes.csv"])
+
+^{:kindly/hide-code true}
+(def parties-csv-files
+  [#_"notebooks/datasets/2015parties.csv"
+   "notebooks/datasets/2016parties.csv"
+   "notebooks/datasets/2017parties.csv"
+   "notebooks/datasets/2018parties.csv"
+   "notebooks/datasets/2019parties.csv"
+   "notebooks/datasets/2020parties.csv"
+   "notebooks/datasets/2021parties.csv"
+   "notebooks/datasets/2022parties.csv"
+   "notebooks/datasets/2023parties.csv"
+   "notebooks/datasets/2024parties.csv"
+   #_"notebooks/datasets/2025parties.csv"])
+
+^{:kindly/hide-code true}
+(def injured-witness-passengers-csv-files
+  [#_"notebooks/datasets/2015injuredwitnesspassengers.csv"
+   "notebooks/datasets/2016injuredwitnesspassengers.csv"
+   "notebooks/datasets/2017injuredwitnesspassengers.csv"
+   "notebooks/datasets/2018injuredwitnesspassengers.csv"
+   "notebooks/datasets/2019injuredwitnesspassengers.csv"
+   "notebooks/datasets/2020injuredwitnesspassengers.csv"
+   "notebooks/datasets/2021injuredwitnesspassengers.csv"
+   "notebooks/datasets/2022injuredwitnesspassengers.csv"
+   "notebooks/datasets/2023injuredwitnesspassengers.csv"
+   "notebooks/datasets/2024injuredwitnesspassengers.csv"
+  #_ "notebooks/datasets/2025injuredwitnesspassengers.csv"])
+
+
 ;; # Grand Ave, Oakland, CA
 ;; On Feb 3, 2025, Michael Burawoy was killed in the crosswalk by a speeding driver in a hit-and-run.
 ;; The crosswalk crosses Grande Ave, connecting the Adam's Point neighborhood to Lake Merritt:
@@ -146,7 +202,7 @@
       (tc/select-rows (fn [row]
                         (ped-and-bike-codes (:motor-vehicle-involved-with-code row))))))
 
-(-> grand-ave-crashes-with-peds-and-cyclists
+#_(-> grand-ave-crashes-with-peds-and-cyclists
     (ds/row-map (fn [row]
                   (let [date-time (:crash-date-time row)]
                     (assoc row
@@ -199,7 +255,67 @@
 
 ;; TODO: Can we show a map of which intersections the injuries are happening on?
 
+(def grand-ave-injured
+  (let [collision-ids        (-> grand-ave-crashes-with-peds-and-cyclists
+                                 (tc/select-columns :collision-id)
+                                 (tc/rows)
+                                 flatten
+                                 set)
+        all-injured-on-grand (-> (load-and-combine-csvs injured-witness-passengers-csv-files)
+                                 (ds/select-columns [:collision-id
+                                                     :injured-wit-pass-id
+                                                     :stated-age
+                                                     :gender
+                                                     :injured-person-type])
+                                 (tc/select-rows (fn [row]
+                                                   (contains? collision-ids (:collision-id row)))))
 
+        possible-types       (-> all-injured-on-grand
+                                 (tc/select-columns :injured-person-type)
+                                 (tc/rows)
+                                 flatten
+                                 set)
+        grand-with-crash-data (-> grand-ave-crashes-with-peds-and-cyclists
+                                  (tc/select-columns [:collision-id
+                                                      :crash-date-time
+                                                      :motor-vehicle-involved-with-code
+                                                      :motor-vehicle-involved-with-desc
+                                                      :motor-vehicle-involved-with-other-desc
+                                                      :number-injured
+                                                      :number-killed
+                                                      :lighting-description
+                                                      :latitude
+                                                      :longitude
+                                                      :primary-road
+                                                      :secondary-road]))]
+    (-> all-injured-on-grand
+        (tc/select-rows (fn [row] (contains? #{"Pedestrian" "Bicyclist" "Other"} (:injured-person-type row))))
+        (tc/inner-join grand-with-crash-data
+                       {:left  :collision-id
+                        :right :collision-id}))))
+
+(-> grand-ave-injured
+    (tc/update-columns :stated-age
+                       #(tcc/replace-missing % :value -10))
+    (plotly/layer-point
+       {:=x      :crash-date-time
+        :=y      :stated-age
+        :=color  :injured-person-type
+        :=layout {:title "Injuries on Grand Ave, by Age and Type"
+                  :xaxis {:title "Date"}
+                  :yaxis {:title "Age"}}}))
+
+(-> grand-ave-injured
+    (tc/update-columns :stated-age
+                       #(tcc/replace-missing % :value -10)) ;; has to be an int, so chose an in outside of age range
+    (plotly/layer-histogram
+     {:=x               :stated-age
+      :=histnorm        "count"
+      :=color           :injured-person-type
+      :=mark-opacity    0.7
+      :=layout          {:title "Injuries on Grand Ave, by Age and Type"
+                         :xaxis {:title "Age"}
+                         :yaxis {:title "Count"}}}))
 
 ;; # Telegraph Ave Crash Data
 ;; During 2020-2022, Telegraph Ave, from 19th St to 41st St was re-worked with pedestrians, bicyclists, and bus-riders in mind.
@@ -208,47 +324,6 @@
 
 ;; Using data from the [California Crash Reporting System (CCRS)](https://data.ca.gov/dataset/ccrs)
 
-^{:kindly/hide-code true}
-(def crash-csv-files
-  [#_"notebooks/datasets/2015crashes.csv"
-   "notebooks/datasets/2016crashes.csv"
-   "notebooks/datasets/2017crashes.csv"
-   "notebooks/datasets/2018crashes.csv"
-   "notebooks/datasets/2019crashes.csv"
-   "notebooks/datasets/2020crashes.csv"
-   "notebooks/datasets/2021crashes.csv"
-   "notebooks/datasets/2022crashes.csv"
-   "notebooks/datasets/2023crashes.csv"
-   "notebooks/datasets/2024crashes.csv"
-   #_"notebooks/datasets/2025crashes.csv"])
-
-^{:kindly/hide-code true}
-(def parties-csv-files
-  [#_"notebooks/datasets/2015parties.csv"
-   "notebooks/datasets/2016parties.csv"
-   "notebooks/datasets/2017parties.csv"
-   "notebooks/datasets/2018parties.csv"
-   "notebooks/datasets/2019parties.csv"
-   "notebooks/datasets/2020parties.csv"
-   "notebooks/datasets/2021parties.csv"
-   "notebooks/datasets/2022parties.csv"
-   "notebooks/datasets/2023parties.csv"
-   "notebooks/datasets/2024parties.csv"
-   #_"notebooks/datasets/2025parties.csv"])
-
-^{:kindly/hide-code true}
-(def injured-witness-passengers-csv-files
-  [#_"notebooks/datasets/2015injuredwitnesspassengers.csv"
-   "notebooks/datasets/2016injuredwitnesspassengers.csv"
-   "notebooks/datasets/2017injuredwitnesspassengers.csv"
-   "notebooks/datasets/2018injuredwitnesspassengers.csv"
-   "notebooks/datasets/2019injuredwitnesspassengers.csv"
-   "notebooks/datasets/2020injuredwitnesspassengers.csv"
-   "notebooks/datasets/2021injuredwitnesspassengers.csv"
-   "notebooks/datasets/2022injuredwitnesspassengers.csv"
-   "notebooks/datasets/2023injuredwitnesspassengers.csv"
-   "notebooks/datasets/2024injuredwitnesspassengers.csv"
-  #_ "notebooks/datasets/2025injuredwitnesspassengers.csv"])
 
 (def telegraph-intersections-of-interest
   #{"19TH" "WILLIAM" "20TH" "BERKLEY" "21ST" "22ND"
@@ -257,18 +332,6 @@
     "32ND" "HAWTHORNE" "33RD" "34TH" "MACARTHUR" "35TH"
     "36TH" "37TH" "38TH" "APGAR" "39TH" "40TH" "41ST"})
 
-^{:kindly/hide-code true}
-(defn load-and-combine-csvs [file-paths]
-  (let [datasets (map #(ds/->dataset % {:key-fn    csk/->kebab-case-keyword
-                                        :parser-fn {:collision-id       :integer
-                                                    :crash-date-time    :local-date-time
-                                                    :ncic-code          :integer
-                                                    :is-highway-related :boolean
-                                                    :is-tow-away        :boolean
-                                                    :number-injured     :integer
-                                                    :number-killed      :integer}})
-                      file-paths)]
-    (apply ds/concat datasets)))
 
 (def oakland-city-crashes
   (-> (load-and-combine-csvs crash-csv-files)
