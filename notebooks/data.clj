@@ -1,7 +1,11 @@
 (ns data
   (:require [tablecloth.api :as tc]
             [camel-snake-kebab.core :as csk]
-            [geo.io :as geoio]))
+            [geo.io :as geoio]
+            [charred.api :as charred]
+            [geo.spatial :as spatial]
+            [clojure.string :as str])
+  (:import (org.locationtech.jts.geom Geometry)))
 
 ^{:kindly/hide-code true}
 (def crash-csv-files
@@ -101,3 +105,25 @@
                             str
                             geoio/read-wkt)))
       (tc/select-columns [:geometry :Name])))
+
+
+;; Using defonce to run this data filtering only once per session:
+(defonce filter-geojson
+  (-> "data/Street_Centerlines_-8203296818607454791.geojson"
+      slurp
+      (charred/read-json {:key-fn keyword})
+      (update :features (partial filter (fn [{:keys [geometry properties]}]
+                                          (and geometry
+                                               (let [{:keys [CITYR CITYL]}
+                                                     properties]
+                                                 (and (or (= CITYL "Oakland")
+                                                          (= CITYR "Oakland"))))))))
+      (->> (charred/write-json "data/Oakland-centerlines.geojson"))))
+
+(def Oakland-centerlines
+  (let [geojson-str (slurp "data/Oakland-centerlines.geojson")]
+    (-> geojson-str
+        geoio/read-geojson
+        (->> (map (fn [{:keys [properties geometry]}]
+                    (assoc properties :geometry geometry))))
+        tc/dataset)))
