@@ -1,3 +1,5 @@
+;; # Data preparation
+
 (ns data
   (:require [tablecloth.api :as tc]
             [camel-snake-kebab.core :as csk]
@@ -6,6 +8,8 @@
             [geo.spatial :as spatial]
             [clojure.string :as str])
   (:import (org.locationtech.jts.geom Geometry)))
+
+;; ## Crashes
 
 ^{:kindly/hide-code true}
 (def crash-csv-files
@@ -94,6 +98,7 @@
       :pedestrian-action-desc
       frequencies))
 
+;; ## Oakland neighborhoods:
 
 (def neighborhoods
   (-> "data/Features_20250425.csv.gz"
@@ -106,6 +111,8 @@
                             geoio/read-wkt)))
       (tc/select-columns [:geometry :Name])))
 
+
+;; ## Oakland street centerlines
 
 ;; Using defonce to run this data filtering only once per session:
 (defonce filter-geojson
@@ -120,10 +127,66 @@
                                                           (= CITYR "Oakland"))))))))
       (->> (charred/write-json "data/Oakland-centerlines.geojson"))))
 
+;; ## Coordinate transformations
+;; (between globe coordinates and local approximate plane coordinates):
+
+(def crs-transform-wgs84->bay-area
+  (geo.crs/create-transform
+   ;; https://epsg.io/4326
+   (geo.crs/create-crs 4326)
+   ;; https://epsg.io/2227
+   (geo.crs/create-crs 2227)))
+
+(def crs-transform-bay-area->wgs84
+  (geo.crs/create-transform
+   ;; https://epsg.io/2227
+   (geo.crs/create-crs 2227)
+   ;; https://epsg.io/4326
+   (geo.crs/create-crs 4326)))
+
+(defn wgs84->bay-area
+  [geometry]
+  (geo.jts/transform-geom geometry crs-transform-wgs84->bay-area))
+
+(defn bay-area->wgs84
+  [geometry]
+  (geo.jts/transform-geom geometry crs-transform-bay-area->wgs84))
+
+
+;; ## Preprocessing Oakland street centerlines
+
 (def Oakland-centerlines
   (let [geojson-str (slurp "data/Oakland-centerlines.geojson")]
     (-> geojson-str
         geoio/read-geojson
         (->> (map (fn [{:keys [properties geometry]}]
                     (assoc properties :geometry geometry))))
-        tc/dataset)))
+        tc/dataset
+        (tc/map-columns :line-string
+                        [:geometry]
+                        #(spatial/to-jts % 4326))
+        (tc/map-columns :local-line-string
+                        [:line-string]
+                        wgs84->bay-area)
+        (tc/map-columns :local-buffer
+                        [:local-line-string]
+                        (fn [^Geometry g]
+                          (.buffer g 50)))
+        (tc/add-column :line-string-geojson
+                       (-> geojson-str
+                           (charred/read-json {:key-fn keyword})
+                           :features
+                           (->> (map :geometry ))))
+        ;; Figure out relevant streets from the STREET field.
+        ;; E.g.: if STREET="75TH ON HEGENBERGER EB",
+        ;; then streets=["75TH" "HEGENBERGER"].
+        (tc/map-columns :streets
+                        [:STREET]
+                        (fn [STREET]
+                          (some-> STREET
+                                  (str/replace #" (WB|NB|EB|SB)" " ")
+                                  (str/replace #" CONN" " ")
+                                  (str/split #" (ON|OFF|TO|FROM) ")
+                                  (->> (mapv str/trim))))))))
+
+
