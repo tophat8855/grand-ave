@@ -1,6 +1,7 @@
 (ns data
   (:require [tablecloth.api :as tc]
-            [camel-snake-kebab.core :as csk]))
+            [camel-snake-kebab.core :as csk]
+            [geo.io :as geoio]))
 
 ^{:kindly/hide-code true}
 (def crash-csv-files
@@ -88,3 +89,15 @@
   (-> oakland-city-crashes
       :pedestrian-action-desc
       frequencies))
+
+
+(def neighborhoods
+  (-> "data/Features_20250425.csv.gz"
+      (tc/dataset {:key-fn keyword})
+      (tc/map-columns :geometry
+                      [:the_geom]
+                      (fn [the-geom]
+                        (-> the-geom
+                            str
+                            geoio/read-wkt)))
+      (tc/select-columns [:geometry :Name])))
