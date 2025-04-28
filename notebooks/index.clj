@@ -98,51 +98,99 @@
              :caption "Grand Ave Heatmap"})
 
 (def grand-intersections-of-interest
-  {"HARRISON"    {:lat 37.8109389 :long -122.2648802}
-   "BAY"         {:lat 37.8105517 :long -122.2632057}
-   "PARK VIEW"   {:lat 37.8097245 :long -122.2607476}
-   "BELLEVUE"    {:lat 37.8097757 :long -122.2620034}
-   "LENOX"       {:lat 37.8092907 :long -122.2610871}
-   "LEE"         {:lat 37.8091254 :long -122.2585415}
-   "PERKINS"     {:lat 37.8091058 :long -122.2574318}
-   "ELLITA"      {:lat 37.8089329 :long -122.2575731}
-   "STATEN"      {:lat 37.8087855 :long -122.2564191}
-   "EUCLID"      {:lat 37.8086043 :long -122.2542574}
-   "EMBARCADERO" {:lat 37.8093863 :long -122.25235}
-   "MACARTHUR"   {:lat 37.8101499 :long -122.2513041}
-   "LAKE PARK"   {:lat 37.8108553 :long -122.249266}
-   "SANTA CLARA" {:lat 37.8118568 :long -122.2503111}
-   "ELWOOD"      {:lat 37.8136874 :long -122.2491843}
-   "MANDANA"     {:lat 37.8142519 :long -122.2488258}})
+  {"HARRISON"    {:lat 37.810923 :lng -122.262360}
+   "BAY PL"      {:lat 37.810590 :lng -122.260507}
+   "PARK VIEW"   {:lat 37.809881 :lng -122.259373}
+   "BELLEVUE"    {:lat 37.809713 :lng -122.259452}
+   "LENOX"       {:lat 37.809358 :lng -122.258479}
+   "LEE"         {:lat 37.809068 :lng -122.257263}
+   "PERKINS"     {:lat 37.808994 :lng -122.256149}
+   "ELLITA"      {:lat 37.808864 :lng -122.255016}
+   "STATEN"      {:lat 37.808784 :lng -122.253832}
+   "EUCLID"      {:lat 37.808608 :lng -122.251686}
+   "EMBARCADERO" {:lat 37.809342 :lng -122.249697}
+   "MACARTHUR"   {:lat 37.810195 :lng -122.248825}
+   "LAKE PARK"   {:lat 37.811454 :lng -122.247977}
+   "SANTA CLARA" {:lat 37.811797 :lng -122.247833}
+   "ELWOOD"      {:lat 37.813721 :lng -122.246586}
+   "MANDANA"     {:lat 37.814243 :lng -122.246230}})
 
 (def grand-ave-crashes
-  (-> (load-and-combine-csvs crash-csv-files)
-      (ds/select-columns [:collision-id
-                          :ncic-code
-                          :crash-date-time
-                          :collision-type-description
-                          :day-of-week
-                          :is-highway-related
-                          :motor-vehicle-involved-with-code
-                          :motor-vehicle-involved-with-desc
-                          :motor-vehicle-involved-with-other-desc
-                          :number-injured
-                          :number-killed
-                          :lighting-description
-                          :latitude
-                          :longitude
-                          :pedestrian-action-desc
-                          :primary-road
-                          :secondary-road])
-      (ds/filter #(clojure.string/includes? (or (:primary-road %)
-                                                (:secondary-road %)) "GRAND"))
-      (ds/filter (fn [row]
-                   (or (some #(clojure.string/includes? (:primary-road row) %)
-                             (keys grand-intersections-of-interest))
-                       (some #(clojure.string/includes? (:secondary-road row) %)
-                             (keys grand-intersections-of-interest)))))
-      #_  (ds/group-by-column :secondary-road)
-      ))
+  (let [crashes  (-> (load-and-combine-csvs crash-csv-files)
+                     (ds/select-columns [:collision-id
+                                         :ncic-code
+                                         :crash-date-time
+                                         :collision-type-description
+                                         :day-of-week
+                                         :is-highway-related
+                                         :motor-vehicle-involved-with-code
+                                         :motor-vehicle-involved-with-desc
+                                         :motor-vehicle-involved-with-other-desc
+                                         :number-injured
+                                         :number-killed
+                                         :lighting-description
+                                         :latitude
+                                         :longitude
+                                         :pedestrian-action-desc
+                                         :primary-road
+                                         :secondary-road])
+                     (ds/filter #(clojure.string/includes? (or (:primary-road %)
+                                                               (:secondary-road %)) "GRAND"))
+                     (ds/filter (fn [row]
+                                  (some #(clojure.string/includes? (:secondary-road row) %)
+                                        (keys grand-intersections-of-interest)))))]
+    (-> crashes
+        (tc/map-columns :intersection-lat
+                        (tc/column-names crashes #{:secondary-road})
+                        (fn [secondary-road]
+                          (let [match (some (fn [[k v]]
+                                              (when (clojure.string/includes? secondary-road k)
+                                                v))
+                                            grand-intersections-of-interest)]
+                            (:lat match))))
+        (tc/map-columns :intersection-lng
+                        (tc/column-names crashes #{:secondary-road})
+                        (fn [secondary-road]
+                          (let [match (some (fn [[k v]]
+                                              (when (clojure.string/includes? secondary-road k)
+                                                v))
+                                            grand-intersections-of-interest)]
+                            (:lng match)))))))
+
+(def grand-ave-crash-to-heatmaps
+  (mapv (fn [{:keys [intersection-lat intersection-lng row-count]}]
+          [intersection-lat intersection-lng (* 0.9 row-count)])
+        (-> grand-ave-crashes
+            (tc/group-by [:intersection-lat :intersection-lng])
+            (tc/aggregate {:row-count tc/row-count})
+            (tc/rows :as-maps))))
+
+(kind/hiccup
+ [:div [:script
+        {:src "https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.min.js"}]
+  ['(fn [latlngs]
+      [:div
+       {:style {:height "500px"}
+        :ref   (fn [el]
+                 (let [m (-> js/L
+                             (.map el)
+                             (.setView (clj->js [37.809401 -122.253160])
+                                       15))]
+                   (-> js/L
+                       .-tileLayer
+                       (.provider "Stadia.AlidadeSmooth")
+                       (.addTo m))
+                   (doseq [latlng latlngs]
+                     (-> js/L
+                         (.marker (clj->js latlng))
+                         (.addTo m)))
+                   (-> js/L
+                       (.heatLayer (clj->js latlngs)
+                                   (clj->js {:radius 30}))
+                       (.addTo m))))}])
+   grand-ave-crash-to-heatmaps]]
+;; Note we need to mention the dependency:
+ {:html/deps [:leaflet]})
 
 ;; Types of crashes since 2017
 (-> grand-ave-crashes
@@ -157,7 +205,6 @@
           {:title {:text "Types of Crashes on Grand Ave 2017-2024"}
            :series {:type   "pie"
                     :data   data}})))))
-
 
 ;; Types of crashes over time
 (-> grand-ave-crashes
