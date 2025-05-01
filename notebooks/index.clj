@@ -35,45 +35,45 @@
 
 ^{:kindly/hide-code true}
 (def crash-csv-files
-  [#_"notebooks/datasets/2015crashes.csv"
-   "notebooks/datasets/2016crashes.csv"
-   "notebooks/datasets/2017crashes.csv"
-   "notebooks/datasets/2018crashes.csv"
-   "notebooks/datasets/2019crashes.csv"
-   "notebooks/datasets/2020crashes.csv"
-   "notebooks/datasets/2021crashes.csv"
-   "notebooks/datasets/2022crashes.csv"
-   "notebooks/datasets/2023crashes.csv"
-   "notebooks/datasets/2024crashes.csv"
-   #_"notebooks/datasets/2025crashes.csv"])
+  [#_"datasets/2015crashes.csv"
+   "datasets/2016crashes.csv"
+   "datasets/2017crashes.csv"
+   "datasets/2018crashes.csv"
+   "datasets/2019crashes.csv"
+   "datasets/2020crashes.csv"
+   "datasets/2021crashes.csv"
+   "datasets/2022crashes.csv"
+   "datasets/2023crashes.csv"
+   "datasets/2024crashes.csv"
+   #_"datasets/2025crashes.csv"])
 
 ^{:kindly/hide-code true}
 (def parties-csv-files
-  [#_"notebooks/datasets/2015parties.csv"
-   "notebooks/datasets/2016parties.csv"
-   "notebooks/datasets/2017parties.csv"
-   "notebooks/datasets/2018parties.csv"
-   "notebooks/datasets/2019parties.csv"
-   "notebooks/datasets/2020parties.csv"
-   "notebooks/datasets/2021parties.csv"
-   "notebooks/datasets/2022parties.csv"
-   "notebooks/datasets/2023parties.csv"
-   "notebooks/datasets/2024parties.csv"
-   #_"notebooks/datasets/2025parties.csv"])
+  [#_"datasets/2015parties.csv"
+   "datasets/2016parties.csv"
+   "datasets/2017parties.csv"
+   "datasets/2018parties.csv"
+   "datasets/2019parties.csv"
+   "datasets/2020parties.csv"
+   "datasets/2021parties.csv"
+   "datasets/2022parties.csv"
+   "datasets/2023parties.csv"
+   "datasets/2024parties.csv"
+   #_"datasets/2025parties.csv"])
 
 ^{:kindly/hide-code true}
 (def injured-witness-passengers-csv-files
-  [#_"notebooks/datasets/2015injuredwitnesspassengers.csv"
-   "notebooks/datasets/2016injuredwitnesspassengers.csv"
-   "notebooks/datasets/2017injuredwitnesspassengers.csv"
-   "notebooks/datasets/2018injuredwitnesspassengers.csv"
-   "notebooks/datasets/2019injuredwitnesspassengers.csv"
-   "notebooks/datasets/2020injuredwitnesspassengers.csv"
-   "notebooks/datasets/2021injuredwitnesspassengers.csv"
-   "notebooks/datasets/2022injuredwitnesspassengers.csv"
-   "notebooks/datasets/2023injuredwitnesspassengers.csv"
-   "notebooks/datasets/2024injuredwitnesspassengers.csv"
-  #_ "notebooks/datasets/2025injuredwitnesspassengers.csv"])
+  [#_"datasets/2015injuredwitnesspassengers.csv"
+   "datasets/2016injuredwitnesspassengers.csv"
+   "datasets/2017injuredwitnesspassengers.csv"
+   "datasets/2018injuredwitnesspassengers.csv"
+   "datasets/2019injuredwitnesspassengers.csv"
+   "datasets/2020injuredwitnesspassengers.csv"
+   "datasets/2021injuredwitnesspassengers.csv"
+   "datasets/2022injuredwitnesspassengers.csv"
+   "datasets/2023injuredwitnesspassengers.csv"
+   "datasets/2024injuredwitnesspassengers.csv"
+  #_ "datasets/2025injuredwitnesspassengers.csv"])
 
 
 ;; # Grand Ave, Oakland, CA
