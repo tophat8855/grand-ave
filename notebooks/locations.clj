@@ -27,6 +27,7 @@
             [tech.v3.datatype.argops :as argops]
             [tech.v3.dataset.print :as print])
   (:import java.time.LocalDateTime
+           (org.locationtech.jts.index.strtree STRtree)
            (org.locationtech.jts.geom Geometry Point Polygon Coordinate)
            (org.locationtech.jts.geom.prep PreparedGeometry
                                            PreparedLineString
@@ -182,6 +183,12 @@
                                 (->> (apply jts/coordinate))
                                 jts/point
                                 data/bay-area->wgs84)))))
+
+(-> crashes-with-centerlines
+    :intersecting-segments
+    (->> (map count)))
+
+
 
 ;; How often can we find intersection data?
 
@@ -392,3 +399,99 @@
                                     (. (addTo m))))]))]]])))))
       (kind/fragment
        {:html/deps [:leaflet]})))
+
+
+;; Combining with neighborhoods
+
+(def year-streetneigh-counts
+  (-> year-segment-counts
+      (tc/map-columns :STREET [:segment] :STREET)
+      (tc/map-columns :neighborhoods [:segment] :neighborhoods)
+      (tc/rows :as-maps)
+      (->> (mapcat (fn [{:as row
+                         :keys [neighborhoods]}]
+                     (->> neighborhoods
+                          (map (fn [neigh]
+                                 (-> row
+                                     (assoc :neighborhood neigh)
+                                     (dissoc :neighborhoods))))))))
+      tc/dataset
+      (tc/group-by [:year :STREET :neighborhood])
+      (tc/aggregate {:n #(-> % :n tcc/sum)
+                     :*segments #(-> % :segment vec delay)})
+      (tc/group-by [:STREET :neighborhood])
+      (tc/aggregate {:n #(-> % :n tcc/sum)
+                     :year-counts (fn [ds]
+                                    (-> ds
+                                        (tc/select-columns [:year :n])
+                                        (tc/order-by [:year])
+                                        delay))
+                     :*segments #(->> %
+                                      :*segments
+                                      (mapcat deref)
+                                      delay)})
+      (tc/map-columns :year-counts [:year-counts] deref)))
+
+
+(delay
+  (-> year-streetneigh-counts
+      (tc/select-rows #(-> % :n (>= 20)))
+      (tc/select-columns [:STREET :neighborhood :n :year-counts])
+      (tc/order-by :STREET)
+      (print/print-range :all)))
+
+
+(-> year-streetneigh-counts
+    (tc/select-rows #(-> % :n (>= 50)))
+    (tc/order-by [:n] :desc)
+    (tc/rows :as-maps)
+    (->> (map (fn [{:keys [STREET neighborhood *segments n year-counts]}]
+                (let [geojson (->> *segments
+                                   deref
+                                   (mapv :line-string-geojson))
+                      center (-> geojson
+                                 (->> (mapcat :coordinates))
+                                 tensor/->tensor
+                                 (tensor/reduce-axis fun/mean 0)
+                                 reverse)
+                      data {'center center
+                            'zoom 15
+                            'provider "OpenStreetMap.Mapnik"
+                            'segments_geojson geojson}]
+                  [(kind/hiccup
+                    [:div
+                     [:h2 (str STREET " - " neighborhood)]
+                     [:h3 "total: " (int n)]
+                     (-> year-counts
+                         tc/dataset
+                         (tc/order-by [:year])
+                         (plotly/layer-line {:=x :year
+                                             :=y :n}))])
+                   (kind/hiccup
+                    [:div {:style {:width "500px"
+                                   :height "800px"}}
+                     [:script
+                      (js-closure
+                       (concat
+                        [(js-assignment 'data data)]
+                        (->> data
+                             (mapv (fn [[k v]]
+                                     (js-entry-assignment k 'data k))))
+                        [(js '(var m (L.map document.currentScript.parentElement))
+                             '(m.setView center zoom)
+                             '(-> (L.tileLayer.provider provider)
+                                  (. (addTo m)))
+                             '(-> segments_geojson
+                                  (L.geoJSON {:style {:weight 10
+                                                      :opacity 0.6}})
+                                  (. (addTo m))))]))]])]))))
+    (kind/table
+     {:html/deps [:leaflet]}))
+
+
+
+
+
+
+
+
