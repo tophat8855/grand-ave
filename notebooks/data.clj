@@ -111,6 +111,28 @@
                             geoio/read-wkt)))
       (tc/select-columns [:geometry :Name])))
 
+;; 
+
+(defn make-spatial-index [dataset & {:keys [geometry-column]
+                                     :or   {geometry-column :geometry}}]
+  (let [tree (org.locationtech.jts.index.strtree.STRtree.)]
+    (doseq [row (tc/rows dataset :as-maps)]
+      (let [geometry (row geometry-column)]
+        (.insert tree
+                 (.getEnvelopeInternal geometry)
+                 (assoc row
+                        :prepared-geometry
+                        (org.locationtech.jts.geom.prep.PreparedGeometryFactory/prepare geometry)))))
+    tree))
+
+(def neighborhoods-index
+  (make-spatial-index neighborhoods))
+
+(defn intersecting-places [region spatial-index]
+  (->> (.query spatial-index (.getEnvelopeInternal region))
+       (filter (fn [row]
+                 (.intersects (:prepared-geometry row) region)))
+       tc/dataset))
 
 ;; ## Oakland street centerlines
 
@@ -187,6 +209,23 @@
                                   (str/replace #" (WB|NB|EB|SB)" " ")
                                   (str/replace #" CONN" " ")
                                   (str/split #" (ON|OFF|TO|FROM) ")
-                                  (->> (mapv str/trim))))))))
+                                  (->> (mapv str/trim)))))
+        (tc/map-columns :neighborhoods
+                        [:line-string]
+                        (fn [line-string]
+                          (-> line-string
+                              (data/intersecting-places data/neighborhoods-index)
+                              :Name
+                              vec))))))
 
+
+(delay
+  (-> Oakland-centerlines
+      (tc/select-columns [:STREET :neighborhoods])))
+
+(delay
+  (->> Oakland-centerlines
+       :neighborhoods
+       (map count)
+       frequencies))
 
