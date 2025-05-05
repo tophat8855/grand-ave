@@ -440,53 +440,68 @@
       (tc/order-by :STREET)
       (print/print-range :all)))
 
+(delay
+  (-> year-streetneigh-counts
+      (tc/select-rows #(-> % :n (>= 50)))
+      (tc/order-by [:n] :desc)
+      (tc/rows :as-maps)
+      first
+      :*segments
+      deref
+      (->> (mapv (fn [{:keys [line-string-geojson]}]
+                   {:type "Feature"
+                    :geometry line-string-geojson})))))
 
-(-> year-streetneigh-counts
-    (tc/select-rows #(-> % :n (>= 50)))
-    (tc/order-by [:n] :desc)
-    (tc/rows :as-maps)
-    (->> (map (fn [{:keys [STREET neighborhood *segments n year-counts]}]
-                (let [geojson (->> *segments
-                                   deref
-                                   (mapv :line-string-geojson))
-                      center (-> geojson
-                                 (->> (mapcat :coordinates))
-                                 tensor/->tensor
-                                 (tensor/reduce-axis fun/mean 0)
-                                 reverse)
-                      data {'center center
-                            'zoom 15
-                            'provider "OpenStreetMap.Mapnik"
-                            'segments_geojson geojson}]
-                  [(kind/hiccup
-                    [:div
-                     [:h2 (str STREET " - " neighborhood)]
-                     [:h3 "total: " (int n)]
-                     (-> year-counts
-                         tc/dataset
-                         (tc/order-by [:year])
-                         (plotly/layer-line {:=x :year
-                                             :=y :n}))])
-                   (kind/hiccup
-                    [:div {:style {:width "500px"
-                                   :height "800px"}}
-                     [:script
-                      (js-closure
-                       (concat
-                        [(js-assignment 'data data)]
-                        (->> data
-                             (mapv (fn [[k v]]
-                                     (js-entry-assignment k 'data k))))
-                        [(js '(var m (L.map document.currentScript.parentElement))
-                             '(m.setView center zoom)
-                             '(-> (L.tileLayer.provider provider)
-                                  (. (addTo m)))
-                             '(-> segments_geojson
-                                  (L.geoJSON {:style {:weight 10
-                                                      :opacity 0.6}})
-                                  (. (addTo m))))]))]])]))))
-    (kind/table
-     {:html/deps [:leaflet]}))
+(delay
+  (-> year-streetneigh-counts
+      (tc/select-rows #(-> % :n (>= 50)))
+      (tc/order-by [:n] :desc)
+      (tc/rows :as-maps)
+      (->> (map (fn [{:keys [STREET neighborhood *segments n year-counts]}]
+                  (let [geojson (->> @*segments
+                                     (mapv (fn [{:keys [line-string-geojson]}]
+                                             {:type "Feature"
+                                              :geometry line-string-geojson})))
+                        center (-> geojson
+                                   (->> (mapcat (comp :coordinates :geometry)))
+                                   tensor/->tensor
+                                   (tensor/reduce-axis fun/mean 0)
+                                   reverse)
+                        data {'center center
+                              'zoom 14
+                              'provider "OpenStreetMap.Mapnik"
+                              'segments_geojson geojson}]
+                    [(kind/hiccup
+                      [:div
+                       [:h2 (str STREET " - " neighborhood)]
+                       [:h3 "total: " (int n)]
+                       [:h3 "segments: " (count @*segments)]
+                       (-> year-counts
+                           tc/dataset
+                           (tc/order-by [:year])
+                           (plotly/layer-line {:=x :year
+                                               :=y :n}))])
+                     (kind/hiccup
+                      [:div {:style {:width "500px"
+                                     :height "800px"}}
+                       [:script
+                        (js-closure
+                         (concat
+                          [(js-assignment 'data data)]
+                          (->> data
+                               (mapv (fn [[k v]]
+                                       (js-entry-assignment k 'data k))))
+                          [(js '(var m (L.map document.currentScript.parentElement))
+                               '(m.setView center zoom)
+                               '(-> (L.tileLayer.provider provider)
+                                    (. (addTo m)))
+                               '(-> segments_geojson
+                                    (L.geoJSON {:style {:weight 10
+                                                        :opacity 0.6}})
+                                    (. (addTo m))))]))]])]))))
+      (kind/table
+       {:html/deps [:leaflet]})))
+
 
 
 
