@@ -25,8 +25,11 @@
             [tech.v3.datatype.functional :as fun]
             [tech.v3.tensor :as tensor]
             [tech.v3.datatype.argops :as argops]
-            [tech.v3.dataset.print :as print])
+            [tech.v3.dataset.print :as print]
+            [clojure2d.color :as color]
+            [hiccup.core :as hiccup])
   (:import java.time.LocalDateTime
+           (org.locationtech.jts.index.strtree STRtree)
            (org.locationtech.jts.geom Geometry Point Polygon Coordinate)
            (org.locationtech.jts.geom.prep PreparedGeometry
                                            PreparedLineString
@@ -183,6 +186,12 @@
                                 jts/point
                                 data/bay-area->wgs84)))))
 
+(-> crashes-with-centerlines
+    :intersecting-segments
+    (->> (map count)))
+
+
+
 ;; How often can we find intersection data?
 
 (-> crashes-with-centerlines
@@ -275,7 +284,7 @@
                         data {'center [(.getY center-coordinate)
                                        (.getX center-coordinate)]
                               'zoom 16
-                              'provider "OpenStreetMap.Mapnik"
+                              'provider "Esri.WorldGrayCanvas"
                               'segments_geojson segments-geojson
                               'centers_geojson centers-geojson}]
                     [:div
@@ -367,7 +376,7 @@
                   (let [{:keys [line-string-geojson]} segment
                         data {'center grand-ave-center
                               'zoom 16
-                              'provider "OpenStreetMap.Mapnik"
+                              'provider "Esri.WorldGrayCanvas"
                               'segment_geojson line-string-geojson}]
                     (kind/hiccup
                      [:div 
@@ -392,3 +401,216 @@
                                     (. (addTo m))))]))]]])))))
       (kind/fragment
        {:html/deps [:leaflet]})))
+
+
+;; Combining with neighborhoods
+
+(def year-streetneigh-counts
+  (-> year-segment-counts
+      (tc/map-columns :STREET [:segment] :STREET)
+      (tc/map-columns :neighborhoods [:segment] :neighborhoods)
+      (tc/rows :as-maps)
+      (->> (mapcat (fn [{:as row
+                         :keys [neighborhoods]}]
+                     (->> neighborhoods
+                          (map (fn [neigh]
+                                 (-> row
+                                     (assoc :neighborhood neigh)
+                                     (dissoc :neighborhoods))))))))
+      tc/dataset
+      (tc/group-by [:year :STREET :neighborhood])
+      (tc/aggregate {:n #(-> % :n tcc/sum)
+                     :*segments #(-> % :segment vec delay)})
+      (tc/group-by [:STREET :neighborhood])
+      (tc/aggregate {:n #(-> % :n tcc/sum)
+                     :year-counts (fn [ds]
+                                    (-> ds
+                                        (tc/select-columns [:year :n])
+                                        (tc/order-by [:year])
+                                        delay))
+                     :*segments #(->> %
+                                      :*segments
+                                      (mapcat deref)
+                                      delay)})
+      (tc/map-columns :year-counts [:year-counts] deref)))
+
+
+(delay
+  (-> year-streetneigh-counts
+      (tc/select-rows #(-> % :n (>= 20)))
+      (tc/select-columns [:STREET :neighborhood :n :year-counts])
+      (tc/order-by :STREET)
+      (print/print-range :all)))
+
+(delay
+  (-> year-streetneigh-counts
+      (tc/select-rows #(-> % :n (>= 50)))
+      (tc/order-by [:n] :desc)
+      (tc/rows :as-maps)
+      first
+      :*segments
+      deref
+      (->> (mapv (fn [{:keys [line-string-geojson]}]
+                   {:type "Feature"
+                    :geometry line-string-geojson})))))
+
+(defn show-streetneighs [predicate]
+  (-> year-streetneigh-counts
+      (tc/select-rows predicate)
+      (tc/order-by [:n] :desc)
+      (tc/rows :as-maps)
+      (->> (map (fn [{:keys [STREET neighborhood *segments n year-counts]}]
+                  (let [geojson (->> @*segments
+                                     (mapv (fn [{:keys [line-string-geojson]}]
+                                             {:type "Feature"
+                                              :geometry line-string-geojson})))
+                        center (-> geojson
+                                   (->> (mapcat (comp :coordinates :geometry)))
+                                   tensor/->tensor
+                                   (tensor/reduce-axis fun/mean 0)
+                                   reverse)
+                        data {'center center
+                              'zoom 14
+                              'provider "Esri.WorldGrayCanvas"
+                              'segments_geojson geojson}]
+                    [(kind/hiccup
+                      [:div
+                       [:h2 (str STREET " - " neighborhood)]
+                       [:h3 "total: " (int n)]
+                       [:h3 "segments: " (count @*segments)]
+                       (-> year-counts
+                           tc/dataset
+                           (tc/order-by [:year])
+                           (plotly/layer-line {:=x :year
+                                               :=y :n}))])
+                     (kind/hiccup
+                      [:div {:style {:width "500px"
+                                     :height "800px"}}
+                       [:script
+                        (js-closure
+                         (concat
+                          [(js-assignment 'data data)]
+                          (->> data
+                               (mapv (fn [[k v]]
+                                       (js-entry-assignment k 'data k))))
+                          [(js '(var m (L.map document.currentScript.parentElement))
+                               '(m.setView center zoom)
+                               '(-> (L.tileLayer.provider provider)
+                                    (. (addTo m)))
+                               '(-> segments_geojson
+                                    (L.geoJSON {:style {:weight 10
+                                                        :opacity 0.6}})
+                                    (. (addTo m))))]))]])]))))
+      (kind/table
+       {:html/deps [:leaflet]})))
+
+
+(delay
+  (show-streetneighs
+   (fn [{:keys [n]}]
+     (>= n 50))))
+
+
+(delay
+  (show-streetneighs
+   (fn [{:keys [STREET]}]
+     (->> STREET
+          str/lower-case
+          (re-find #"telegraph")))))
+
+
+(delay
+  (show-streetneighs
+   (fn [{:keys [STREET]}]
+     (->> STREET
+          str/lower-case
+          (re-find #"grand")))))
+
+
+(def n->color
+  (let [g (color/gradient [:cyan :red])]
+    (fn [n]
+      (-> n
+          math/log
+          (/ 7)
+          g
+          color/format-hex))))
+
+
+(defn show-streetneighs-on-one-map [predicate]
+  (let [geojson (-> year-streetneigh-counts
+                    (tc/select-rows predicate)
+                    (tc/order-by [:n] :desc)
+                    (tc/rows :as-maps)
+                    (->> (mapcat
+                          (fn [{:keys [STREET neighborhood *segments n year-counts]}]
+                            (->> @*segments
+                                 (mapv (fn [{:keys [line-string-geojson]}]
+                                         {:type "Feature"
+                                          :geometry line-string-geojson
+                                          :properties {:n n
+                                                       :color (n->color n)
+                                                       :STREET STREET
+                                                       :neighborhood neighborhood
+                                                       :tooltip (hiccup/html
+                                                                 [:h3
+                                                                  (str
+                                                                   STREET
+                                                                   " - "
+                                                                   neighborhood
+                                                                   " : "
+                                                                   n)])}})))))))
+        center (-> geojson
+                   (->> (mapcat (comp :coordinates :geometry)))
+                   tensor/->tensor
+                   (tensor/reduce-axis fun/mean 0)
+                   reverse)
+        data {'center center
+              'zoom 14
+              'provider "Esri.WorldGrayCanvas"
+              'segments_geojson geojson}]
+    (kind/hiccup
+     [:div {:style {:width "800px"
+                    :height "800px"}}
+      [:script
+       (js-closure
+        (concat
+         [(js-assignment 'data data)]
+         (->> data
+              (mapv (fn [[k v]]
+                      (js-entry-assignment k 'data k))))
+         [(js '(var m (L.map document.currentScript.parentElement))
+              '(m.setView center zoom)
+              '(-> (L.tileLayer.provider provider)
+                   (. (addTo m)))
+              '(-> segments_geojson
+                   (L.geoJSON {:style (fn [feature]
+                                        (return
+                                         {:weight 20
+                                          :opacity 1
+                                          :color feature.properties.color}))
+                               :onEachFeature (fn [feature layer]
+                                                (layer.bindTooltip
+                                                 feature.properties.tooltip))})
+                   (. (addTo m))))]))]]
+     {:html/deps [:leaflet]})))
+
+(delay
+  (show-streetneighs-on-one-map
+   (fn [{:keys [n]}]
+     (>= n 10))))
+
+(delay
+  (show-streetneighs-on-one-map
+   (fn [{:keys [STREET]}]
+     (->> STREET
+          str/lower-case
+          (re-find #"telegraph")))))
+
+
+(delay
+  (show-streetneighs-on-one-map
+   (fn [{:keys [STREET]}]
+     (->> STREET
+          str/lower-case
+          (re-find #"grand")))))

@@ -1,5 +1,6 @@
 {:deps {camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
         org.scicloj/noj                     {:mvn/version "2-beta16"}
         org.scicloj/tablemath {:mvn/version "1-alpha2"}
-        factual/geo {:mvn/version "3.0.1"}}
+        factual/geo {:mvn/version "3.0.1"}
+        clojure2d/clojure2d {:mvn/version "1.5.0-SNAPSHOT"}}
  :paths ["src" "notebooks"]}
