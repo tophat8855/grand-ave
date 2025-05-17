@@ -6,3 +6,4 @@ docs/*qmd
 .DS_Store
 raw-datasets/
 temp
+presentation/

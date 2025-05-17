@@ -77,13 +77,6 @@
 
 
 ;; # Grand Ave, Oakland, CA
-;; On Feb 3, 2025, Michael Burawoy was killed in the crosswalk by a speeding driver in a hit-and-run.
-;; The crosswalk crosses Grande Ave, connecting the Adam's Point neighborhood to Lake Merritt:
-;; the grand jewel of Oakland.
-
-;; INSERT image of crosswalk
-
-;; INSERT map of Grand Ave along Lake Merrit to show the landscape.
 
 ;; The City of Oakland is currently looking re-paving Grand Ave, and the local neighborhoods
 ;; and street safety groups are hoping that the re-paving will also include upgrades in the
@@ -132,7 +125,9 @@
                                                                (:secondary-road %)) "GRAND"))
                      (ds/filter (fn [row]
                                   (some #(clojure.string/includes? (:secondary-road row) %)
-                                        (keys grand-intersections-of-interest)))))]
+                                        (keys grand-intersections-of-interest))))
+                     spy)
+        ]
     (-> crashes
         (tc/map-columns :intersection-lat
                         (tc/column-names crashes #{:secondary-road})
@@ -151,6 +146,7 @@
                                             grand-intersections-of-interest)]
                             (:lng match)))))))
 
+;;; SLIDE GRAND AVE CRASH MAP
 (def grand-ave-crash-to-heatmaps
   (mapv (fn [{:keys [intersection-lat intersection-lng row-count]}]
           [intersection-lat intersection-lng (* 0.9 row-count)])
@@ -186,7 +182,9 @@
 ;; Note we need to mention the dependency:
  {:html/deps [:leaflet]})
 
-;; Types of crashes since 2017
+;;; SLIDE What are cars crashing into?
+
+;; Types of crashes since 2016
 (-> grand-ave-crashes
     (tc/group-by [:motor-vehicle-involved-with-desc])
     (tc/aggregate {:count tc/row-count})
@@ -196,7 +194,7 @@
                           :value (second row)})
                   (tc/rows df))]
          (kind/echarts
-          {:title {:text "Types of Crashes on Grand Ave 2017-2024"}
+          {:title {:text "Types of Crashes on Grand Ave 2016-2024"}
            :series {:type   "pie"
                     :data   data}})))))
 
@@ -242,21 +240,6 @@
   (-> grand-ave-crashes
       (tc/select-rows (fn [row]
                         (ped-and-bike-codes (:motor-vehicle-involved-with-code row))))))
-
-(-> grand-ave-crashes-with-peds-and-cyclists
-    (ds/row-map (fn [row]
-                  (let [date-time (:crash-date-time row)]
-                    (assoc row
-                           :year (str (.getYear date-time))))))
-    (tc/dataset)
-    (tc/group-by :year)
-    (tc/aggregate {:number-injured-sum #(reduce + (map (fn [v] (if (nil? v) 0 (Integer. v))) (% :number-injured)))})
-    (plotly/layer-bar
-     {:=x "Year"
-      :=y :number-injured-sum
-      :=layout {:title "Number of Injuries Over Years"
-                :xaxis {:title "Year"}
-                :yaxis {:title "Number of Injuries"}}}))
 
 (-> grand-ave-crashes-with-peds-and-cyclists
     (ds/row-map (fn [row]
@@ -355,6 +338,8 @@
             (tc/aggregate {:row-count tc/row-count})
             (tc/rows :as-maps))))
 
+;; SLIDE HEATMAP OF GRAND AVE INJURIES
+
 (kind/hiccup
  [:div [:script
         {:src "https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.min.js"}]
@@ -382,6 +367,7 @@
  ;; Note we need to mention the dependency:
  {:html/deps [:leaflet]})
 
+;; This is ped and bike only
 (-> grand-ave-injured
     (tc/update-columns :stated-age
                        #(tcc/replace-missing % :value -10))
@@ -393,6 +379,7 @@
                   :xaxis {:title "Date"}
                   :yaxis {:title "Age"}}}))
 
+;; this is ped and bike only
 (-> grand-ave-injured
     (tc/update-columns :stated-age
                        #(tcc/replace-missing % :value -10)) ;; has to be an int, so chose an in outside of age range
@@ -406,14 +393,10 @@
                          :yaxis {:title "Count"}}}))
 
 ;; # Telegraph Ave Crash Data
-;; During 2020-2022, Telegraph Ave, from 19th St to 41st St was re-worked with pedestrians, bicyclists, and bus-riders in mind.
-;; This included reducing the number of lanes for cars, adding bulbouts, bike lanes, and bus loading islands.
-;; We we first look at the crash data prior to 2020 and how it changed after the changes were made.
 
 ;; Using data from the [California Crash Reporting System (CCRS)](https://data.ca.gov/dataset/ccrs)
 
-
-(def telegraph-intersections-of-interest
+(def kono-intersections-of-interest
   {"19TH"      {:lat 37.808247 :lng -122.269923}
    "WILLIAM"   {:lat 37.808963 :lng -122.269773}
    "20TH"      {:lat 37.809594 :lng -122.269629}
@@ -429,7 +412,10 @@
    "27TH"      {:lat 37.816191 :lng -122.267938}
    "MERRICMAC" {:lat 37.816621 :lng -122.267830}
    "28TH"      {:lat 37.817135 :lng -122.267710}
-   "29TH"      {:lat 37.818240 :lng -122.267391}
+   "29TH"      {:lat 37.818240 :lng -122.267391}})
+
+(def pill-hill-intersections-of-interest
+  {"29TH"      {:lat 37.818240 :lng -122.267391}
    "30TH"      {:lat 37.819228 :lng -122.267149}
    "31ST"      {:lat 37.820018 :lng -122.266971}
    "32ND"      {:lat 37.820919 :lng -122.266696}
@@ -445,6 +431,10 @@
    "39TH"      {:lat 37.828410 :lng -122.264681}
    "40TH"      {:lat 37.829167 :lng -122.264478}
    "41ST"      {:lat 37.29965 :lng -122.264254}})
+
+(def telegraph-intersections-of-interest
+  (merge kono-intersections-of-interest
+         pill-hill-intersections-of-interest))
 
 (def oakland-city-crashes
   (-> (load-and-combine-csvs crash-csv-files)
@@ -474,8 +464,7 @@
                                   (or (some #(clojure.string/includes? (:primary-road row) %)
                                             (keys telegraph-intersections-of-interest))
                                       (some #(clojure.string/includes? (:secondary-road row) %)
-                                            (keys telegraph-intersections-of-interest)))))
-                     )]
+                                            (keys telegraph-intersections-of-interest))))))]
     (-> crashes
     (tc/map-columns :intersection-lat
                         (tc/column-names crashes #{:secondary-road})
@@ -502,6 +491,7 @@
             (tc/aggregate {:row-count tc/row-count})
             (tc/rows :as-maps))))
 
+;; SLIDE TELEGRAPH AVE Map of crashes
 ;; ## Heatmap of Telegraph Ave crashes
 (kind/hiccup
  [:div [:script
@@ -594,7 +584,6 @@
   (mapv (fn [{:keys [intersection-lat intersection-lng row-count]}]
           [intersection-lat intersection-lng (* 2 row-count)])
         (-> telegraph-ave-injured
-            spy
             (tc/group-by [:intersection-lat :intersection-lng])
             (tc/aggregate {:row-count tc/row-count})
             (tc/rows :as-maps))))
@@ -682,6 +671,77 @@
                 :xaxis {:title "Year"}
                 :yaxis {:title "Number of Injuries"}}}))
 
+;; ## Injuries in KONO, over time, by year
+(def kono-crashes
+  (let [crashes (-> oakland-city-crashes
+                     (ds/filter #(clojure.string/includes? (or (:primary-road %)
+                                                               (:secondary-road %)) "TELEGRAPH"))
+                     (ds/filter (fn [row]
+                                  (or (some #(clojure.string/includes? (:primary-road row) %)
+                                            (keys kono-intersections-of-interest))
+                                      (some #(clojure.string/includes? (:secondary-road row) %)
+                                            (keys kono-intersections-of-interest))))))]
+    (-> crashes
+    (tc/map-columns :intersection-lat
+                        (tc/column-names crashes #{:secondary-road})
+                        (fn [secondary-road]
+                           (let [match (some (fn [[k v]]
+                                               (when (clojure.string/includes? secondary-road k)
+                                                 v))
+                                            kono-intersections-of-interest)]
+                             (:lat match))))
+        (tc/map-columns :intersection-lng
+                        (tc/column-names crashes #{:secondary-road})
+                        (fn [secondary-road]
+                           (let [match (some (fn [[k v]]
+                                               (when (clojure.string/includes? secondary-road k)
+                                                 v))
+                                            kono-intersections-of-interest)]
+                             (:lng match)))))))
+
+(-> kono-crashes
+    (ds/row-map (fn [row]
+                  (let [date-time (:crash-date-time row)]
+                    (assoc row
+                           :year (str (.getYear date-time))))))
+    (tc/dataset)
+    (tc/group-by :year)
+    (tc/aggregate {:number-injured-sum #(reduce + (map (fn [v] (if (nil? v) 0 (Integer. v))) (% :number-injured)))})
+    (plotly/layer-bar
+     {:=x :$group-name
+      :=y :number-injured-sum
+      :=layout {:title "Number of Injuries Over Years"
+                :xaxis {:title "Year"}
+                :yaxis {:title "Number of Injuries"}}}))
+
+;; ## Inuries on Pill Hill, over time, by year
+(def pill-hill-crashes
+  (let [crashes (-> oakland-city-crashes
+                     (ds/filter #(clojure.string/includes? (or (:primary-road %)
+                                                               (:secondary-road %)) "TELEGRAPH"))
+                     (ds/filter (fn [row]
+                                  (or (some #(clojure.string/includes? (:primary-road row) %)
+                                            (keys pill-hill-intersections-of-interest))
+                                      (some #(clojure.string/includes? (:secondary-road row) %)
+                                            (keys pill-hill-intersections-of-interest))))))]
+    (-> crashes
+    (tc/map-columns :intersection-lat
+                        (tc/column-names crashes #{:secondary-road})
+                        (fn [secondary-road]
+                           (let [match (some (fn [[k v]]
+                                               (when (clojure.string/includes? secondary-road k)
+                                                 v))
+                                            pill-hill-intersections-of-interest)]
+                             (:lat match))))
+        (tc/map-columns :intersection-lng
+                        (tc/column-names crashes #{:secondary-road})
+                        (fn [secondary-road]
+                           (let [match (some (fn [[k v]]
+                                               (when (clojure.string/includes? secondary-road k)
+                                                 v))
+                                            pill-hill-intersections-of-interest)]
+                             (:lng match)))))))
+
 ;; Line chart depicting number of crashes. Oakland is one line and Telegraph is another line
 (-> oakland-city-crashes
     (ds/row-map (fn [row]
@@ -709,6 +769,32 @@
       :=y :count
       :=mark-color "red"}))
 
+(-> kono-crashes
+    (ds/row-map (fn [row]
+                  (let [date-time (:crash-date-time row)]
+                    (assoc row
+                           :year (str (.getYear date-time))))))
+    (tc/dataset)
+    (tc/group-by [:year])
+    (tc/aggregate {:count tc/row-count})
+    (plotly/layer-line
+     {:=x :year
+      :=y :count
+      :=mark-color "green"}))
+
+(-> pill-hill-crashes
+    (ds/row-map (fn [row]
+                  (let [date-time (:crash-date-time row)]
+                    (assoc row
+                           :year (str (.getYear date-time))))))
+    (tc/dataset)
+    (tc/group-by [:year])
+    (tc/aggregate {:count tc/row-count})
+    (plotly/layer-line
+     {:=x :year
+      :=y :count
+      :=mark-color "blue"}))
+
 ;; combined data for both oakland and telegraph for crashes
 
 (let [oakland-data (-> oakland-city-crashes
@@ -733,15 +819,38 @@
                          (tc/aggregate {:count tc/row-count})
                          (tc/add-column :normalized-count (fn [ds]
                                                             (tcc// (:count ds) (float (first (:count ds)))))))
-      combined-data (tc/concat oakland-data telegraph-data)]
-  (plotly/layer-line
-   combined-data
-   {:=x :year
-    :=y :normalized-count
-    :=color :source
-    :=layout {:title "Number of Crashes Over Years"
-              :xaxis {:title "Year"}
-              :yaxis {:title "Number of Crashes"}}}))
+      kono-data (-> kono-crashes
+                         (ds/row-map (fn [row]
+                                       (let [date-time (:crash-date-time row)]
+                                         (assoc row
+                                                :year (str (.getYear date-time))
+                                                :source "Kono"))))
+                         (tc/dataset)
+                         (tc/group-by [:year :source])
+                         (tc/aggregate {:count tc/row-count})
+                         (tc/add-column :normalized-count (fn [ds]
+                                                            (tcc// (:count ds) (float (first (:count ds)))))))
+      pill-hill-data (-> pill-hill-crashes
+                         (ds/row-map (fn [row]
+                                       (let [date-time (:crash-date-time row)]
+                                         (assoc row
+                                                :year (str (.getYear date-time))
+                                                :source "Pill Hill"))))
+                         (tc/dataset)
+                         (tc/group-by [:year :source])
+                         (tc/aggregate {:count tc/row-count})
+                         (tc/add-column :normalized-count (fn [ds]
+                                                            (tcc// (:count ds) (float (first (:count ds)))))))
+      combined-data (tc/concat oakland-data telegraph-data kono-data pill-hill-data)]
+  (-> combined-data
+      (plotly/base {:=title "Number of Crashes Over Years"})
+      (plotly/layer-line
+       {:=x :year
+        :=y :normalized-count
+        :=color :source
+        :=layout {:title "Number of Crashes Over Years"
+                  :xaxis {:title "Year"}
+                  :yaxis {:title "Number of Crashes"}}})))
 
 (def oakland-crashes-pedestrian-involved
   (-> oakland-city-crashes
@@ -837,9 +946,271 @@
                            :data (get data (keyword (csk/->kebab-case entity)))})
                         (keys (dissoc data :x-axis-data)))})))))
 
+(def oakland-crashes-with-peds-and-cyclists
+  (-> oakland-city-crashes
+      (tc/select-rows (fn [row]
+                        (ped-and-bike-codes (:motor-vehicle-involved-with-code row))))))
 
-;; ### grand vs. Oakland crashes
-(let [oakland-data  (-> oakland-city-crashes
+(def telegraph-ave-crashes-with-peds-and-cyclists
+  (-> telegraph-ave-crashes
+      (tc/select-rows (fn [row]
+                        (ped-and-bike-codes (:motor-vehicle-involved-with-code row))))))
+
+(def kono-crashes-with-peds-and-cyclists
+  (-> kono-crashes
+      (tc/select-rows (fn [row]
+                        (ped-and-bike-codes (:motor-vehicle-involved-with-code row))))))
+
+(def pill-hill-crashes-with-peds-and-cyclists
+  (-> pill-hill-crashes
+      (tc/select-rows (fn [row]
+                        (ped-and-bike-codes (:motor-vehicle-involved-with-code row))))))
+
+(def oakland-city-injured-bikes-peds
+  (let [collision-ids        (-> oakland-crashes-with-peds-and-cyclists
+                                 (tc/select-columns :collision-id)
+                                 (tc/rows)
+                                 flatten
+                                 set)
+        all-injured-oakland (-> (load-and-combine-csvs injured-witness-passengers-csv-files)
+                                 (ds/select-columns [:collision-id
+                                                     :injured-wit-pass-id
+                                                     :stated-age
+                                                     :gender
+                                                     :injured-person-type])
+                                 (tc/select-rows (fn [row]
+                                                   (contains? collision-ids (:collision-id row)))))
+
+        possible-types        (-> all-injured-oakland
+                                  (tc/select-columns :injured-person-type)
+                                  (tc/rows)
+                                  flatten
+                                  set)
+        oakland-with-crash-data (-> oakland-crashes-with-peds-and-cyclists
+                                  (tc/select-columns [:collision-id
+                                                      :crash-date-time
+                                                      :motor-vehicle-involved-with-code
+                                                      :motor-vehicle-involved-with-desc
+                                                      :motor-vehicle-involved-with-other-desc
+                                                      :number-injured
+                                                      :number-killed
+                                                      :lighting-description
+                                                      :latitude
+                                                      :longitude
+                                                      :primary-road
+                                                      :secondary-road]))]
+    (-> all-injured-oakland
+        (tc/select-rows (fn [row] (contains? #{"Pedestrian" "Bicyclist" "Other"} (:injured-person-type row))))
+        (tc/inner-join oakland-with-crash-data
+                       {:left  :collision-id
+                        :right :collision-id}))))
+
+(def telegraph-ave-injured-bikes-peds
+  (let [collision-ids        (-> telegraph-ave-crashes-with-peds-and-cyclists
+                                 (tc/select-columns :collision-id)
+                                 (tc/rows)
+                                 flatten
+                                 set)
+        all-injured-on-telegraph (-> (load-and-combine-csvs injured-witness-passengers-csv-files)
+                                 (ds/select-columns [:collision-id
+                                                     :injured-wit-pass-id
+                                                     :stated-age
+                                                     :gender
+                                                     :injured-person-type])
+                                 (tc/select-rows (fn [row]
+                                                   (contains? collision-ids (:collision-id row)))))
+
+        possible-types        (-> all-injured-on-telegraph
+                                  (tc/select-columns :injured-person-type)
+                                  (tc/rows)
+                                  flatten
+                                  set)
+        telegraph-with-crash-data (-> telegraph-ave-crashes-with-peds-and-cyclists
+                                  (tc/select-columns [:collision-id
+                                                      :crash-date-time
+                                                      :motor-vehicle-involved-with-code
+                                                      :motor-vehicle-involved-with-desc
+                                                      :motor-vehicle-involved-with-other-desc
+                                                      :number-injured
+                                                      :number-killed
+                                                      :lighting-description
+                                                      :latitude
+                                                      :longitude
+                                                      :primary-road
+                                                      :secondary-road]))
+        crashes               (-> all-injured-on-telegraph
+                                  (tc/select-rows (fn [row] (contains? #{"Pedestrian" "Bicyclist" "Other"} (:injured-person-type row))))
+                                  (tc/inner-join telegraph-with-crash-data
+                                                 {:left  :collision-id
+                                                  :right :collision-id}))]
+    (-> crashes
+        (tc/map-columns :intersection-lat
+                        (tc/column-names crashes #{:secondary-road})
+                        (fn [secondary-road]
+                          (let [match (some (fn [[k v]]
+                                              (when (clojure.string/includes? secondary-road k)
+                                                v))
+                                            telegraph-intersections-of-interest)]
+                            (:lat match))))
+        (tc/map-columns :intersection-lng
+                        (tc/column-names crashes #{:secondary-road})
+                        (fn [secondary-road]
+                          (let [match (some (fn [[k v]]
+                                              (when (clojure.string/includes? secondary-road k)
+                                                v))
+                                            telegraph-intersections-of-interest)]
+                            (:lng match))))
+        spy)))
+
+(def telegraph-ave-injuries-to-heatmaps
+  (mapv (fn [{:keys [intersection-lat intersection-lng row-count]}]
+          [intersection-lat intersection-lng (* 1.5 row-count)])
+        (-> telegraph-ave-injured-bikes-peds
+            (tc/group-by [:intersection-lat :intersection-lng])
+            (tc/aggregate {:row-count tc/row-count})
+            (tc/rows :as-maps))))
+
+(kind/hiccup
+ [:div [:script
+        {:src "https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.min.js"}]
+  ['(fn [latlngs]
+      [:div
+       {:style {:height "500px"}
+        :ref   (fn [el]
+                 (let [m (-> js/L
+                             (.map el)
+                             (.setView (clj->js [37.821925 -122.266376])
+                                       14.3))]
+                   (-> js/L
+                       .-tileLayer
+                       (.provider "Stadia.AlidadeSmooth")
+                       (.addTo m))
+                   (doseq [latlng latlngs]
+                     (-> js/L
+                         (.marker (clj->js latlng))
+                         (.addTo m)))
+                   (-> js/L
+                       (.heatLayer (clj->js latlngs)
+                                   (clj->js {:radius 30}))
+                       (.addTo m))))}])
+   telegraph-ave-injuries-to-heatmaps]]
+ ;; Note we need to mention the dependency:
+ {:html/deps [:leaflet]})
+
+(def kono-injured-bikes-peds
+  (let [collision-ids        (-> kono-crashes-with-peds-and-cyclists
+                                 (tc/select-columns :collision-id)
+                                 (tc/rows)
+                                 flatten
+                                 set)
+        all-injured-on-kono (-> (load-and-combine-csvs injured-witness-passengers-csv-files)
+                                 (ds/select-columns [:collision-id
+                                                     :injured-wit-pass-id
+                                                     :stated-age
+                                                     :gender
+                                                     :injured-person-type])
+                                 (tc/select-rows (fn [row]
+                                                   (contains? collision-ids (:collision-id row)))))
+
+        possible-types        (-> all-injured-on-kono
+                                  (tc/select-columns :injured-person-type)
+                                  (tc/rows)
+                                  flatten
+                                  set)
+        kono-with-crash-data (-> kono-crashes-with-peds-and-cyclists
+                                  (tc/select-columns [:collision-id
+                                                      :crash-date-time
+                                                      :motor-vehicle-involved-with-code
+                                                      :motor-vehicle-involved-with-desc
+                                                      :motor-vehicle-involved-with-other-desc
+                                                      :number-injured
+                                                      :number-killed
+                                                      :lighting-description
+                                                      :latitude
+                                                      :longitude
+                                                      :primary-road
+                                                      :secondary-road]))
+        crashes               (-> all-injured-on-kono
+                                  (tc/select-rows (fn [row] (contains? #{"Pedestrian" "Bicyclist" "Other"} (:injured-person-type row))))
+                                  (tc/inner-join kono-with-crash-data
+                                                 {:left  :collision-id
+                                                  :right :collision-id}))]
+    (-> crashes
+        (tc/map-columns :intersection-lat
+                        (tc/column-names crashes #{:secondary-road})
+                        (fn [secondary-road]
+                          (let [match (some (fn [[k v]]
+                                              (when (clojure.string/includes? secondary-road k)
+                                                v))
+                                            kono-intersections-of-interest)]
+                            (:lat match))))
+        (tc/map-columns :intersection-lng
+                        (tc/column-names crashes #{:secondary-road})
+                        (fn [secondary-road]
+                          (let [match (some (fn [[k v]]
+                                              (when (clojure.string/includes? secondary-road k)
+                                                v))
+                                            kono-intersections-of-interest)]
+                            (:lng match)))))))
+
+(def pill-hill-injured-bikes-peds
+  (let [collision-ids        (-> pill-hill-crashes-with-peds-and-cyclists
+                                 (tc/select-columns :collision-id)
+                                 (tc/rows)
+                                 flatten
+                                 set)
+        all-injured-on-pill-hill (-> (load-and-combine-csvs injured-witness-passengers-csv-files)
+                                 (ds/select-columns [:collision-id
+                                                     :injured-wit-pass-id
+                                                     :stated-age
+                                                     :gender
+                                                     :injured-person-type])
+                                 (tc/select-rows (fn [row]
+                                                   (contains? collision-ids (:collision-id row)))))
+
+        possible-types        (-> all-injured-on-pill-hill
+                                  (tc/select-columns :injured-person-type)
+                                  (tc/rows)
+                                  flatten
+                                  set)
+        pill-hill-with-crash-data (-> pill-hill-crashes-with-peds-and-cyclists
+                                  (tc/select-columns [:collision-id
+                                                      :crash-date-time
+                                                      :motor-vehicle-involved-with-code
+                                                      :motor-vehicle-involved-with-desc
+                                                      :motor-vehicle-involved-with-other-desc
+                                                      :number-injured
+                                                      :number-killed
+                                                      :lighting-description
+                                                      :latitude
+                                                      :longitude
+                                                      :primary-road
+                                                      :secondary-road]))
+        crashes               (-> all-injured-on-pill-hill
+                                  (tc/select-rows (fn [row] (contains? #{"Pedestrian" "Bicyclist" "Other"} (:injured-person-type row))))
+                                  (tc/inner-join pill-hill-with-crash-data
+                                                 {:left  :collision-id
+                                                  :right :collision-id}))]
+    (-> crashes
+        (tc/map-columns :intersection-lat
+                        (tc/column-names crashes #{:secondary-road})
+                        (fn [secondary-road]
+                          (let [match (some (fn [[k v]]
+                                              (when (clojure.string/includes? secondary-road k)
+                                                v))
+                                            pill-hill-intersections-of-interest)]
+                            (:lat match))))
+        (tc/map-columns :intersection-lng
+                        (tc/column-names crashes #{:secondary-road})
+                        (fn [secondary-road]
+                          (let [match (some (fn [[k v]]
+                                              (when (clojure.string/includes? secondary-road k)
+                                                v))
+                                            pill-hill-intersections-of-interest)]
+                            (:lng match)))))))
+
+;; normalizing injured 
+(let [oakland-data (-> oakland-city-injured-bikes-peds
                        (ds/row-map (fn [row]
                                      (let [date-time (:crash-date-time row)]
                                        (assoc row
@@ -850,7 +1221,7 @@
                        (tc/aggregate {:count tc/row-count})
                        (tc/add-column :normalized-count (fn [ds]
                                                           (tcc// (:count ds) (float (first (:count ds)))))))
-      telegraph-data (-> telegraph-ave-crashes
+      telegraph-data (-> telegraph-ave-injured-bikes-peds
                          (ds/row-map (fn [row]
                                        (let [date-time (:crash-date-time row)]
                                          (assoc row
@@ -861,67 +1232,33 @@
                          (tc/aggregate {:count tc/row-count})
                          (tc/add-column :normalized-count (fn [ds]
                                                             (tcc// (:count ds) (float (first (:count ds)))))))
-      grand-data    (-> grand-ave-crashes
-                     (ds/row-map (fn [row]
-                                   (let [date-time (:crash-date-time row)]
-                                     (assoc row
-                                            :year (str (.getYear date-time))
-                                            :source "Grand"))))
-                     (tc/dataset)
-                     (tc/group-by [:year :source])
-                     (tc/aggregate {:count tc/row-count})
-                     (tc/add-column :normalized-count (fn [ds]
-                                                        (tcc// (:count ds) (float (first (:count ds)))))))
-      combined-data (tc/concat oakland-data grand-data telegraph-data)]
-  (plotly/layer-line
-   combined-data
-   {:=x      :year
-    :=y      :normalized-count
-    :=color  :source
-    :=layout {:title "Number of Crashes Over Years"
-              :xaxis {:title "Year"}
-              :yaxis {:title "Number of Crashes"}}}))
-
-;; ### grand vs. Oakland injuries
-(let [oakland-data   (-> oakland-city-crashes
-                       (ds/row-map (fn [row]
-                                     (let [date-time (:crash-date-time row)]
-                                       (assoc row
-                                              :year (str (.getYear date-time))
-                                              :source "Oakland"))))
-                       (tc/dataset)
-                       (tc/group-by [:year :source])
-                       (tc/aggregate {:number-injured-sum #(reduce + (map (fn [v] (if (nil? v) 0 (Integer. v))) (% :number-injured)))})
-                       (tc/add-column :normalized-count (fn [ds]
-                                                          (tcc// (:number-injured-sum ds) (float (first (:number-injured-sum ds)))))))
-      telegraph-data (-> telegraph-ave-crashes
+      kono-data (-> kono-injured-bikes-peds
                          (ds/row-map (fn [row]
                                        (let [date-time (:crash-date-time row)]
                                          (assoc row
                                                 :year (str (.getYear date-time))
-                                                :source "Telegraph"))))
+                                                :source "Kono"))))
                          (tc/dataset)
                          (tc/group-by [:year :source])
-                         (tc/aggregate {:number-injured-sum #(reduce + (map (fn [v] (if (nil? v) 0 (Integer. v))) (% :number-injured)))})
+                         (tc/aggregate {:count tc/row-count})
                          (tc/add-column :normalized-count (fn [ds]
-                                                            (tcc// (:number-injured-sum ds) (float (first (:number-injured-sum ds))))))) 
-      grand-data     (-> grand-ave-crashes
-                     (ds/row-map (fn [row]
-                                   (let [date-time (:crash-date-time row)]
-                                     (assoc row
-                                            :year (str (.getYear date-time))
-                                            :source "Grand"))))
-                     (tc/dataset)
-                     (tc/group-by [:year :source])
-                     (tc/aggregate {:number-injured-sum #(reduce + (map (fn [v] (if (nil? v) 0 (Integer. v))) (% :number-injured)))})
-                     (tc/add-column :normalized-count (fn [ds]
-                                                        (tcc// (:number-injured-sum ds) (float (first (:number-injured-sum ds)))))))
-      combined-data  (tc/concat oakland-data grand-data telegraph-data)]
-  (plotly/layer-line
-   combined-data
-   {:=x      :year
-    :=y      :normalized-count
-    :=color  :source
-    :=layout {:title "Number of Injuries Over Years"
-              :xaxis {:title "Year"}
-              :yaxis {:title "Number of Injuries"}}}))
+                                                            (tcc// (:count ds) (float (first (:count ds)))))))
+      pill-hill-data (-> pill-hill-injured-bikes-peds
+                         (ds/row-map (fn [row]
+                                       (let [date-time (:crash-date-time row)]
+                                         (assoc row
+                                                :year (str (.getYear date-time))
+                                                :source "Pill Hill"))))
+                         (tc/dataset)
+                         (tc/group-by [:year :source])
+                         (tc/aggregate {:count tc/row-count})
+                         (tc/add-column :normalized-count (fn [ds]
+                                                            (tcc// (:count ds) (float (first (:count ds)))))))
+      combined-data (tc/concat oakland-data telegraph-data kono-data pill-hill-data)]
+  (-> combined-data
+      (plotly/base {:=title "Normalized Number of Inuries Over Years"})
+      (plotly/layer-line
+       {:=x :year
+        :=y :normalized-count
+        :=color :source})))
+

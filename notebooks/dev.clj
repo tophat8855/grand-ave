@@ -15,7 +15,7 @@
              :clean-up-target-dir true})
 
 ;; The following code is used to filter the datasets from the original crash data files to only Oakland crashes.
-;; This allows us to have lessdata to work with and to focus on the data that is relevant to our analysis.
+;; This allows us to have less data to work with and to focus on the data that is relevant to our analysis.
 
 (def crash-csv-files
   "CSV files containing crash data"
@@ -64,7 +64,7 @@
       (ds/->dataset {:key-fn csk/->kebab-case-keyword})
       (ds/filter-column
        :city-name #{"Oakland"})
-      (ds/write! (str "notebooks/datasets/" (last (clojure.string/split file-path #"/"))))))
+      (ds/write! (str "datasets/" (last (clojure.string/split file-path #"/"))))))
 
 (doseq [file crash-csv-files]
   (filter-and-write-csv file))

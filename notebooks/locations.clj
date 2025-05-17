@@ -333,7 +333,6 @@
                               distinct
                               count))})))
 
-
 (def segment-counts
   (-> year-segment-counts
       (tc/group-by [:segment])
@@ -606,7 +605,6 @@
      (->> STREET
           str/lower-case
           (re-find #"telegraph")))))
-
 
 (delay
   (show-streetneighs-on-one-map
