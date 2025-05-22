@@ -612,3 +612,4 @@
      (->> STREET
           str/lower-case
           (re-find #"grand")))))
+

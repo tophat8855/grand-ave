@@ -170,7 +170,7 @@
                        .-tileLayer
                        (.provider "Stadia.AlidadeSmooth")
                        (.addTo m))
-                   (doseq [latlng latlngs]
+                   #_(doseq [latlng latlngs]
                      (-> js/L
                          (.marker (clj->js latlng))
                          (.addTo m)))
@@ -508,7 +508,7 @@
                        .-tileLayer
                        (.provider "Stadia.AlidadeSmooth")
                        (.addTo m))
-                   (doseq [latlng latlngs]
+#_                   (doseq [latlng latlngs]
                      (-> js/L
                          (.marker (clj->js latlng))
                          (.addTo m)))
