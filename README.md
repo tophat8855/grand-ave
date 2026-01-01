@@ -1,6 +1,23 @@
 # Grand Ave Crash Data Analysis
 
-This Clay Notebook project is designed to process and analyze California's crash data (CCRS) with a focus on specific areas and time periods. Our primary goals are to analyze trends on Telegraph Ave before and after the implementation of traffic calming measures and to examine current crash patterns on Grand Ave, including the affected demographics.
+This Clay Notebook project analyzes California's crash data (CCRS) with a focus on Oakland's Grand Ave and Telegraph Ave. The project demonstrates practical techniques for working with real-world GIS data in Clojure, including handling missing coordinates, messy street names, and spatial matching.
+
+**🔗 [View the Live Site](https://tophat8855.github.io/grand-ave/)** (GitHub Pages)
+
+## What's Inside
+
+- **[Tutorial](docs/tutorial.html)**: Comprehensive guide to GIS data handling techniques used in this project
+- **[Main Analysis](docs/index.html)**: Full crash analysis for Grand Ave and Telegraph Ave with interactive maps
+
+## Key GIS Techniques Demonstrated
+
+This project shows how to handle common real-world GIS challenges:
+
+1. **Missing Coordinates**: Derive locations from street intersection names using spatial matching
+2. **Messy Street Names**: Normalize and clean inconsistent text data
+3. **Coordinate System Transformations**: Use local projected coordinates for accurate spatial operations
+4. **Spatial Indexing**: R-tree indexes for efficient polygon/point queries
+5. **Buffer-Based Matching**: Fuzzy spatial matching for imperfect data
 
 ## Project Goals
 
@@ -14,38 +31,60 @@ This Clay Notebook project is designed to process and analyze California's crash
    - Create visualizations to help interpret the analyzed data and present the findings in an understandable manner.
 
 
-## Current Status:
-- CSV files with the Oakland-only data are saved in the project.
-- some basic "figure out how to make graphs" stuff has happened.
+## Data Sources
 
-## Immediate goals:
-- Define the Telegraph Ave project (what section of the street do we want to look at?)
-- Look at Telegraph Ave before/after the project
+This project combines data from three different sources:
 
+- **California Crash Reporting System (CCRS)**: [data.ca.gov](https://data.ca.gov/dataset/ccrs)
+  - Crashes, parties, and injured persons data (2015-2024)
+  - Oakland-filtered datasets in `datasets/` directory
+- **Alameda County Street Centerlines**: [data.acgov.org](https://data.acgov.org/datasets/da0be53b6d0d44eda6c1d88a799b5fb0/explore)
+  - GeoJSON with street geometries for Alameda County
+  - Filtered to Oakland city limits (see `notebooks/data.clj`)
+- **Oakland Neighborhood Boundaries**: [OpenOakland](https://data.openoakland.org/dataset/neighborhoods-ceda-2002/resource/ef24774e-f0ac-46af-80cb-d87c2bf9b46b)
+  - Polygon data for neighborhood assignment (CEDA 2002 neighborhoods)
 
-### What might be difficult to accomplish in the time frame?
+## Building the Site
 
-Are we still helpful for my friends?
-What might be the story here?
-Do we have a method to notice some places where there has been an increase compared to the whole city?
+This project uses Clay (Clojure notebooks) + Quarto to generate static HTML for GitHub Pages.
 
-Model for a local count? probabilistic/statistical models. compare to the city. 
-Ratio of decrease overall, vs ration of degrees on Telegraph.
+### Workflow
 
-What percentage of the injuries are on telegraph?
-Could try to localize the peaks? Near schools?
+1. **Edit notebooks** in `notebooks/` (e.g., `tutorial.clj`, `index.clj`)
+2. **Generate QMD**: In Emacs, call `clay-make-ns-html` on the namespace
+   - This creates `.qmd` and `.html` files in `docs/`
+3. **Build full site**: Run `quarto render` in the `docs/` directory
+   - Generates complete site with navigation, search, etc.
+4. **Deploy**: Push to GitHub - Pages automatically serves from `/docs`
 
-Time series compares to the city and what it means
-Come up with some questions to challenge tools, 
+### Local Development
 
-Looking into ratios (local count/city)
-What visualization do we want?
-Given a point in the city- open an iframe with a street view. usability of the storytelling
+```bash
+# Install dependencies
+clj -P
 
-Local questions?
-The story is the important part.
+# Generate a single notebook (or use clay-make-ns-html in Emacs)
+clj -M:clay ...
 
-Can we use zipcde or neighborhood to narrow down? School zones? SR2S? Maybe ask them?
+# Build the full Quarto site
+cd docs
+quarto render
+```
+
+## Project Structure
+
+```
+grand-ave/
+├── notebooks/           # Clay/Clojure notebooks
+│   ├── tutorial.clj    # GIS methodology tutorial
+│   ├── index.clj       # Main analysis
+│   ├── data.clj        # Data loading utilities
+│   └── locations.clj   # Advanced spatial analysis
+├── datasets/           # Oakland crash data CSVs (2015-2024)
+├── data/              # GIS reference data (neighborhoods, streets)
+├── docs/              # Generated site (GitHub Pages)
+└── deps.edn           # Clojure dependencies
+```
 
 ## Evaluating Telegraph Ave’s Road Diet Impact
 
@@ -78,3 +117,38 @@ Can we use zipcde or neighborhood to narrow down? School zones? SR2S? Maybe ask 
     Who is most at risk on each street?
 
     Based on Telegraph’s data, what safety improvements could be predicted for Grand Ave if a similar lane reduction were implemented?
+
+## Project Goals
+
+This analysis focuses on two main areas:
+
+1. **Telegraph Ave**: Analyze crash trends before and after traffic calming measures (road diet)
+   - KONO district (19th-29th St)
+   - Pill Hill district (29th-41st St)
+
+2. **Grand Ave**: Examine current crash patterns and affected demographics
+   - Harrison to Mandana Boulevard section
+   - Focus on pedestrian and bicycle safety
+
+## For the Clojure Data Science Community
+
+This project serves as a practical example of:
+- Working with government open data in Clojure
+- Handling imperfect geographic data
+- Using JTS (Java Topology Suite) through the `geo` library
+- Creating interactive visualizations with Clay/Quarto
+- Building static data science sites with GitHub Pages
+
+**Key libraries used:**
+- `scicloj/noj` - Data science toolkit
+- `factual/geo` - GIS operations and JTS wrapper
+- `scicloj/tablecloth` - DataFrame operations
+- `scicloj/clay` - Notebook generation
+
+## Contributing & Questions
+
+This project was created for a presentation at a Clojure data science conference. If you're working on similar GIS problems in Clojure, feel free to open issues or discussions!
+
+## License
+
+Data is from public government sources. Code examples are provided for educational purposes.

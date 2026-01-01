@@ -7,3 +7,4 @@ docs/*qmd
 raw-datasets/
 temp
 presentation/
+docs/_book/

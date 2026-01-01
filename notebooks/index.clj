@@ -1256,9 +1256,8 @@
                                                             (tcc// (:count ds) (float (first (:count ds)))))))
       combined-data (tc/concat oakland-data telegraph-data kono-data pill-hill-data)]
   (-> combined-data
-      (plotly/base {:=title "Normalized Number of Inuries Over Years"})
+      (plotly/base {:=title "Normalized Number of Injuries Over Years"})
       (plotly/layer-line
        {:=x :year
         :=y :normalized-count
         :=color :source})))
-

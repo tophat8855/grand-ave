@@ -1,0 +1,1984 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>2&nbsp; Working with Real-World GIS Data in Clojure – Grand Ave, Oakland</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./index.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./tutorial.html"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Working with Real-World GIS Data in Clojure</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Grand Ave, Oakland</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Grand Ave, Oakland, CA</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tutorial.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Working with Real-World GIS Data in Clojure</span></span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#how-we-analyzed-oakland-crash-data" id="toc-how-we-analyzed-oakland-crash-data" class="nav-link active" data-scroll-target="#how-we-analyzed-oakland-crash-data"><span class="header-section-number">2.1</span> How We Analyzed Oakland Crash Data</a></li>
+  <li><a href="#the-data-sources" id="toc-the-data-sources" class="nav-link" data-scroll-target="#the-data-sources"><span class="header-section-number">2.2</span> The Data Sources</a></li>
+  <li><a href="#loading-the-crash-data" id="toc-loading-the-crash-data" class="nav-link" data-scroll-target="#loading-the-crash-data"><span class="header-section-number">2.3</span> Loading the Crash Data</a></li>
+  <li><a href="#problem-1-missing-coordinates" id="toc-problem-1-missing-coordinates" class="nav-link" data-scroll-target="#problem-1-missing-coordinates"><span class="header-section-number">2.4</span> Problem 1: Missing Coordinates</a></li>
+  <li><a href="#approach-1-manual-intersection-lookup-grand-ave" id="toc-approach-1-manual-intersection-lookup-grand-ave" class="nav-link" data-scroll-target="#approach-1-manual-intersection-lookup-grand-ave"><span class="header-section-number">2.5</span> Approach 1: Manual Intersection Lookup (Grand Ave)</a>
+  <ul>
+  <li><a href="#when-to-use-manual-lookup" id="toc-when-to-use-manual-lookup" class="nav-link" data-scroll-target="#when-to-use-manual-lookup"><span class="header-section-number">2.5.1</span> When to Use Manual Lookup</a></li>
+  </ul></li>
+  <li><a href="#approach-2-automated-spatial-matching" id="toc-approach-2-automated-spatial-matching" class="nav-link" data-scroll-target="#approach-2-automated-spatial-matching"><span class="header-section-number">2.6</span> Approach 2: Automated Spatial Matching</a>
+  <ul>
+  <li><a href="#step-1-load-and-filter-street-centerlines" id="toc-step-1-load-and-filter-street-centerlines" class="nav-link" data-scroll-target="#step-1-load-and-filter-street-centerlines"><span class="header-section-number">2.6.1</span> Step 1: Load and Filter Street Centerlines</a></li>
+  <li><a href="#step-2-coordinate-system-transformations" id="toc-step-2-coordinate-system-transformations" class="nav-link" data-scroll-target="#step-2-coordinate-system-transformations"><span class="header-section-number">2.6.2</span> Step 2: Coordinate System Transformations</a></li>
+  <li><a href="#step-3-process-street-centerlines-with-buffers" id="toc-step-3-process-street-centerlines-with-buffers" class="nav-link" data-scroll-target="#step-3-process-street-centerlines-with-buffers"><span class="header-section-number">2.6.3</span> Step 3: Process Street Centerlines with Buffers</a></li>
+  <li><a href="#step-4-build-street-name-index" id="toc-step-4-build-street-name-index" class="nav-link" data-scroll-target="#step-4-build-street-name-index"><span class="header-section-number">2.6.4</span> Step 4: Build Street Name Index</a></li>
+  <li><a href="#step-5-find-intersecting-street-segments" id="toc-step-5-find-intersecting-street-segments" class="nav-link" data-scroll-target="#step-5-find-intersecting-street-segments"><span class="header-section-number">2.6.5</span> Step 5: Find Intersecting Street Segments</a></li>
+  <li><a href="#step-6-calculate-intersection-center-with-tensors" id="toc-step-6-calculate-intersection-center-with-tensors" class="nav-link" data-scroll-target="#step-6-calculate-intersection-center-with-tensors"><span class="header-section-number">2.6.6</span> Step 6: Calculate Intersection Center (with Tensors!)</a></li>
+  </ul></li>
+  <li><a href="#approach-2b-neighborhood-assignment-with-spatial-index" id="toc-approach-2b-neighborhood-assignment-with-spatial-index" class="nav-link" data-scroll-target="#approach-2b-neighborhood-assignment-with-spatial-index"><span class="header-section-number">2.7</span> Approach 2b: Neighborhood Assignment with Spatial Index</a>
+  <ul>
+  <li><a href="#spatial-indexing-for-performance" id="toc-spatial-indexing-for-performance" class="nav-link" data-scroll-target="#spatial-indexing-for-performance"><span class="header-section-number">2.7.1</span> Spatial Indexing for Performance</a></li>
+  </ul></li>
+  <li><a href="#putting-it-all-together-real-workflow-examples" id="toc-putting-it-all-together-real-workflow-examples" class="nav-link" data-scroll-target="#putting-it-all-together-real-workflow-examples"><span class="header-section-number">2.8</span> Putting It All Together: Real Workflow Examples</a>
+  <ul>
+  <li><a href="#example-1-manual-lookup-what-we-used" id="toc-example-1-manual-lookup-what-we-used" class="nav-link" data-scroll-target="#example-1-manual-lookup-what-we-used"><span class="header-section-number">2.8.1</span> Example 1: Manual Lookup (What we used)</a></li>
+  <li><a href="#example-2-automated-matching-advanced-approach-from-locations.clj" id="toc-example-2-automated-matching-advanced-approach-from-locations.clj" class="nav-link" data-scroll-target="#example-2-automated-matching-advanced-approach-from-locations.clj"><span class="header-section-number">2.8.2</span> Example 2: Automated Matching (Advanced approach from locations.clj)</a></li>
+  <li><a href="#example-3-complete-analysis---grand-ave-with-neighborhoods" id="toc-example-3-complete-analysis---grand-ave-with-neighborhoods" class="nav-link" data-scroll-target="#example-3-complete-analysis---grand-ave-with-neighborhoods"><span class="header-section-number">2.8.3</span> Example 3: Complete Analysis - Grand Ave with Neighborhoods</a></li>
+  </ul></li>
+  <li><a href="#code-reference-how-we-did-it" id="toc-code-reference-how-we-did-it" class="nav-link" data-scroll-target="#code-reference-how-we-did-it"><span class="header-section-number">2.9</span> Code Reference: How We Did It</a>
+  <ul>
+  <li><a href="#grand-ave-workflow-manual---from-index.clj" id="toc-grand-ave-workflow-manual---from-index.clj" class="nav-link" data-scroll-target="#grand-ave-workflow-manual---from-index.clj"><span class="header-section-number">2.9.1</span> Grand Ave Workflow (Manual - from index.clj)</a></li>
+  <li><a href="#city-wide-advanced-workflow-automated---from-locations.clj" id="toc-city-wide-advanced-workflow-automated---from-locations.clj" class="nav-link" data-scroll-target="#city-wide-advanced-workflow-automated---from-locations.clj"><span class="header-section-number">2.9.2</span> City-wide Advanced Workflow (Automated - from locations.clj)</a></li>
+  </ul></li>
+  <li><a href="#summary-key-techniques-used-in-this-project" id="toc-summary-key-techniques-used-in-this-project" class="nav-link" data-scroll-target="#summary-key-techniques-used-in-this-project"><span class="header-section-number">2.10</span> Summary: Key Techniques Used in This Project</a>
+  <ul>
+  <li><a href="#manual-intersection-lookup" id="toc-manual-intersection-lookup" class="nav-link" data-scroll-target="#manual-intersection-lookup"><span class="header-section-number">2.10.1</span> 1. <strong>Manual Intersection Lookup</strong></a></li>
+  <li><a href="#automated-spatial-matching" id="toc-automated-spatial-matching" class="nav-link" data-scroll-target="#automated-spatial-matching"><span class="header-section-number">2.10.2</span> 2. <strong>Automated Spatial Matching</strong></a></li>
+  <li><a href="#street-name-normalization" id="toc-street-name-normalization" class="nav-link" data-scroll-target="#street-name-normalization"><span class="header-section-number">2.10.3</span> 3. <strong>Street Name Normalization</strong></a></li>
+  <li><a href="#coordinate-system-transformations" id="toc-coordinate-system-transformations" class="nav-link" data-scroll-target="#coordinate-system-transformations"><span class="header-section-number">2.10.4</span> 4. <strong>Coordinate System Transformations</strong></a></li>
+  <li><a href="#tensor-operations-for-geometry" id="toc-tensor-operations-for-geometry" class="nav-link" data-scroll-target="#tensor-operations-for-geometry"><span class="header-section-number">2.10.5</span> 5. <strong>Tensor Operations for Geometry</strong></a></li>
+  <li><a href="#spatial-indexing" id="toc-spatial-indexing" class="nav-link" data-scroll-target="#spatial-indexing"><span class="header-section-number">2.10.6</span> 6. <strong>Spatial Indexing</strong></a></li>
+  </ul></li>
+  <li><a href="#when-to-use-which-approach" id="toc-when-to-use-which-approach" class="nav-link" data-scroll-target="#when-to-use-which-approach"><span class="header-section-number">2.11</span> When to Use Which Approach</a></li>
+  <li><a href="#what-we-did-in-this-project" id="toc-what-we-did-in-this-project" class="nav-link" data-scroll-target="#what-we-did-in-this-project"><span class="header-section-number">2.12</span> What We Did in This Project</a></li>
+  <li><a href="#libraries-used" id="toc-libraries-used" class="nav-link" data-scroll-target="#libraries-used"><span class="header-section-number">2.13</span> Libraries Used</a></li>
+  <li><a href="#see-the-real-code" id="toc-see-the-real-code" class="nav-link" data-scroll-target="#see-the-real-code"><span class="header-section-number">2.14</span> See the Real Code</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Working with Real-World GIS Data in Clojure</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<style></style>
+<style>.printedClojure .sourceCode {
+  background-color: transparent;
+  border-style: none;
+}
+</style>
+<style>.clay-limit-image-width .clay-image {max-width: 100%}
+.clay-side-by-side .sourceCode {margin: 0}
+.clay-side-by-side {margin: 1em 0}
+</style>
+<script src="tutorial_files/md-default0.js" type="text/javascript"></script>
+<script src="tutorial_files/md-default1.js" type="text/javascript"></script>
+<section id="how-we-analyzed-oakland-crash-data" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="how-we-analyzed-oakland-crash-data"><span class="header-section-number">2.1</span> How We Analyzed Oakland Crash Data</h2>
+<p>This tutorial walks through the techniques we used to analyze crash data for Oakland’s Grand Ave and Telegraph Ave. The challenge: combining three datasets from different sources that weren’t designed to work together.</p>
+</section>
+<section id="the-data-sources" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="the-data-sources"><span class="header-section-number">2.2</span> The Data Sources</h2>
+<p>This project combines data from three different government/civic sources:</p>
+<ol type="1">
+<li><strong>California Crash Data (CCRS)</strong>: Crash records with fields like:
+<ul>
+<li><code>primary-road</code> and <code>secondary-road</code> (street names at intersection)</li>
+<li><code>latitude</code> and <code>longitude</code> (sometimes missing!)</li>
+<li>Crash details: date, injuries, type, etc.</li>
+<li>Source: <a href="https://data.ca.gov/dataset/ccrs">data.ca.gov/dataset/ccrs</a></li>
+</ul></li>
+<li><strong>Alameda County Street Centerlines</strong>: GeoJSON with geometric lines representing streets
+<ul>
+<li>Each street segment has geometry and a <code>STREET</code> field</li>
+<li>Source: <a href="https://data.acgov.org/datasets/da0be53b6d0d44eda6c1d88a799b5fb0/explore">data.acgov.org</a></li>
+<li>Filtered to Oakland city limits (CITYL or CITYR = “Oakland”)</li>
+</ul></li>
+<li><strong>Oakland Neighborhoods (CEDA 2002)</strong>: Polygon boundaries
+<ul>
+<li>Used to assign crashes to specific neighborhoods</li>
+<li>Source: <a href="https://data.openoakland.org/dataset/neighborhoods-ceda-2002/resource/ef24774e-f0ac-46af-80cb-d87c2bf9b46b">OpenOakland</a></li>
+</ul></li>
+</ol>
+<p>The challenge: <strong>None of these datasets were designed to work together!</strong> This tutorial shows how we combined them despite different formats, coordinate systems, and data quality issues.</p>
+</section>
+<section id="loading-the-crash-data" class="level2" data-number="2.3">
+<h2 data-number="2.3" class="anchored" data-anchor-id="loading-the-crash-data"><span class="header-section-number">2.3</span> Loading the Crash Data</h2>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb1"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> load-and-combine-csvs</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Load multiple CSV files and combine them into a single dataset.</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="st">  This is how we load the crash data from multiple years."</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  [file-paths]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">let</span> [datasets (<span class="kw">map</span> #(tc/dataset <span class="va">%</span> {<span class="at">:key-fn</span>    csk/-&gt;kebab-case-keyword</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">:parser-fn</span> {<span class="at">:collision-id</span>       <span class="at">:integer</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>                                                  <span class="at">:crash-date-time</span>    <span class="at">:local-date-time</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>                                                  <span class="at">:ncic-code</span>          <span class="at">:integer</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>                                                  <span class="at">:is-highway-related</span> <span class="at">:boolean</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>                                                  <span class="at">:is-tow-away</span>        <span class="at">:boolean</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>                                                  <span class="at">:number-injured</span>     <span class="at">:integer</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>                                                  <span class="at">:number-killed</span>      <span class="at">:integer</span>}})</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>                      file-paths)]</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">apply</span> tc/concat datasets)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s look at a sample from 2023:</p>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb2"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> sample-crashes-2023</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;</span> [<span class="st">"datasets/2023crashes.csv"</span>]</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>      load-and-combine-csvs</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>      (tc/select-columns [<span class="at">:collision-id</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                          <span class="at">:crash-date-time</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                          <span class="at">:primary-road</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>                          <span class="at">:secondary-road</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>                          <span class="at">:latitude</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>                          <span class="at">:longitude</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>                          <span class="at">:number-injured</span>])</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>      <span class="co">;; Filter to crashes with missing coordinates to show the problem</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>      (tc/select-rows (<span class="kw">fn</span> [row]</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>                        (<span class="kw">or</span> (<span class="kw">nil?</span> (<span class="at">:latitude</span> row))</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>                            (<span class="kw">nil?</span> (<span class="at">:longitude</span> row)))))</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>      (tc/head <span class="dv">10</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb3"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>sample-crashes<span class="dv">-2023</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="clay-dataset">
+<p>datasets/2023crashes.csv [10 7]:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 17%">
+<col style="width: 14%">
+<col style="width: 16%">
+<col style="width: 10%">
+<col style="width: 11%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>:collision-id</th>
+<th>:crash-date-time</th>
+<th>:primary-road</th>
+<th>:secondary-road</th>
+<th style="text-align: right;">:latitude</th>
+<th style="text-align: right;">:longitude</th>
+<th>:number-injured</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>2321157</td>
+<td>2023-12-20T12:00</td>
+<td>EDGEWATER DR</td>
+<td>OAKPORT ST</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>2487278</td>
+<td>2023-01-01T08:10</td>
+<td>FALLON ST</td>
+<td>12TH ST</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td>2487277</td>
+<td>2023-01-09T23:36</td>
+<td>OUTLOOK AV</td>
+<td>75TH AV</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>2487276</td>
+<td>2023-01-04T13:36</td>
+<td>A ST</td>
+<td>97TH AV</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td>2487273</td>
+<td>2023-01-17T16:38</td>
+<td>MACARTHUR BL</td>
+<td>77TH AV</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>2487272</td>
+<td>2023-01-11T22:23</td>
+<td>69TH AV</td>
+<td>WELD ST</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td>2487271</td>
+<td>2023-01-04T17:22</td>
+<td>FOOTHILL BL</td>
+<td>21ST AV</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>2487266</td>
+<td>2023-01-12T05:28</td>
+<td>GASKILL ST</td>
+<td>57TH ST</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td>2487265</td>
+<td>2023-01-17T23:52</td>
+<td>82ND AV</td>
+<td>BANCROFT AV</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>2487264</td>
+<td>2023-01-08T15:45</td>
+<td>MOUNTAIN BL</td>
+<td>ANTIOCH ST</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="problem-1-missing-coordinates" class="level2" data-number="2.4">
+<h2 data-number="2.4" class="anchored" data-anchor-id="problem-1-missing-coordinates"><span class="header-section-number">2.4</span> Problem 1: Missing Coordinates</h2>
+<p>Notice that these crashes have empty/nil values for latitude and longitude. How common is this problem?</p>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb4"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> all-2023-crashes</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;</span> [<span class="st">"datasets/2023crashes.csv"</span>]</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>      load-and-combine-csvs))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb5"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>(<span class="kw">let</span> [total (tc/row-count all<span class="dv">-2023</span>-crashes)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>      missing (<span class="kw">-&gt;</span> all<span class="dv">-2023</span>-crashes</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                  (tc/select-rows (<span class="kw">fn</span> [row]</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>                                    (<span class="kw">or</span> (<span class="kw">nil?</span> (<span class="at">:latitude</span> row))</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>                                        (<span class="kw">nil?</span> (<span class="at">:longitude</span> row)))))</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>                  tc/row-count)]</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  (kind/hiccup</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>   [<span class="at">:div</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    [<span class="at">:h4</span> <span class="st">"Missing Coordinates in 2023 Oakland Crashes"</span>]</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    [<span class="at">:p</span> [<span class="at">:strong</span> (<span class="kw">str</span> missing <span class="st">" out of "</span> total <span class="st">" crashes ("</span> </span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>                     (<span class="kw">int</span> (<span class="kw">*</span> <span class="dv">100</span> (<span class="kw">/</span> missing total))) <span class="st">"%)"</span>)]</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>     <span class="st">" are missing latitude/longitude!"</span>]]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div><h4 class="anchored">Missing Coordinates in 2023 Oakland Crashes</h4><p><strong>3842 out of 6262 crashes (61%)</strong> are missing latitude/longitude!</p></div>
+<p><strong>More than half of the crashes are missing coordinates!</strong></p>
+<p>But we <em>do</em> have the intersection street names. We can use two approaches:</p>
+<ol type="1">
+<li><strong>Simple Approach</strong>: If we know the area well, manually create a lookup of intersection coordinates</li>
+<li><strong>Automated Approach</strong>: Use street centerline geometry to calculate intersections</li>
+</ol>
+</section>
+<section id="approach-1-manual-intersection-lookup-grand-ave" class="level2" data-number="2.5">
+<h2 data-number="2.5" class="anchored" data-anchor-id="approach-1-manual-intersection-lookup-grand-ave"><span class="header-section-number">2.5</span> Approach 1: Manual Intersection Lookup (Grand Ave)</h2>
+<p>For Grand Ave, we knew the specific intersections we wanted to analyze (Harrison to Mandana). This is the approach we used in <code>index.clj</code>:</p>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb6"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> grand-intersections-of-interest</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Hand-picked intersections along Grand Ave with manually looked-up coordinates.</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="st">  </span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="st">  This is the real map from index.clj - we looked these up because we knew</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="st">  the stretch of Grand Ave we cared about."</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  {<span class="st">"HARRISON"</span>    {<span class="at">:lat</span> <span class="fl">37.810923</span> <span class="at">:lng</span> -<span class="fl">122.262360</span>}</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>   <span class="st">"BAY PL"</span>      {<span class="at">:lat</span> <span class="fl">37.810590</span> <span class="at">:lng</span> -<span class="fl">122.260507</span>}</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>   <span class="st">"PARK VIEW"</span>   {<span class="at">:lat</span> <span class="fl">37.809881</span> <span class="at">:lng</span> -<span class="fl">122.259373</span>}</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>   <span class="st">"BELLEVUE"</span>    {<span class="at">:lat</span> <span class="fl">37.809713</span> <span class="at">:lng</span> -<span class="fl">122.259452</span>}</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>   <span class="st">"LENOX"</span>       {<span class="at">:lat</span> <span class="fl">37.809358</span> <span class="at">:lng</span> -<span class="fl">122.258479</span>}</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>   <span class="st">"LEE"</span>         {<span class="at">:lat</span> <span class="fl">37.809068</span> <span class="at">:lng</span> -<span class="fl">122.257263</span>}</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>   <span class="st">"PERKINS"</span>     {<span class="at">:lat</span> <span class="fl">37.808994</span> <span class="at">:lng</span> -<span class="fl">122.256149</span>}</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>   <span class="st">"ELLITA"</span>      {<span class="at">:lat</span> <span class="fl">37.808864</span> <span class="at">:lng</span> -<span class="fl">122.255016</span>}</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>   <span class="st">"STATEN"</span>      {<span class="at">:lat</span> <span class="fl">37.808784</span> <span class="at">:lng</span> -<span class="fl">122.253832</span>}</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>   <span class="st">"EUCLID"</span>      {<span class="at">:lat</span> <span class="fl">37.808608</span> <span class="at">:lng</span> -<span class="fl">122.251686</span>}</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>   <span class="st">"EMBARCADERO"</span> {<span class="at">:lat</span> <span class="fl">37.809342</span> <span class="at">:lng</span> -<span class="fl">122.249697</span>}</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>   <span class="st">"MACARTHUR"</span>   {<span class="at">:lat</span> <span class="fl">37.810195</span> <span class="at">:lng</span> -<span class="fl">122.248825</span>}</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>   <span class="st">"LAKE PARK"</span>   {<span class="at">:lat</span> <span class="fl">37.811454</span> <span class="at">:lng</span> -<span class="fl">122.247977</span>}</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>   <span class="st">"SANTA CLARA"</span> {<span class="at">:lat</span> <span class="fl">37.811797</span> <span class="at">:lng</span> -<span class="fl">122.247833</span>}</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>   <span class="st">"ELWOOD"</span>      {<span class="at">:lat</span> <span class="fl">37.813721</span> <span class="at">:lng</span> -<span class="fl">122.246586</span>}</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>   <span class="st">"MANDANA"</span>     {<span class="at">:lat</span> <span class="fl">37.814243</span> <span class="at">:lng</span> -<span class="fl">122.246230</span>}})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now we can filter crashes to just Grand Ave intersections and add coordinates:</p>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb7"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> add-grand-ave-coordinates</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Add intersection coordinates to Grand Ave crashes using manual lookup.</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="st">  </span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="st">  This is the approach from index.clj."</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  [crashes]</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;</span> crashes</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>      <span class="co">;; Filter to Grand Ave crashes</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>      (ds/filter #(str/includes? (<span class="kw">or</span> (<span class="at">:primary-road</span> <span class="va">%</span>)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>                                      (<span class="at">:secondary-road</span> <span class="va">%</span>) <span class="st">""</span>)</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"GRAND"</span>))</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>      <span class="co">;; Filter to our specific intersections</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>      (ds/filter (<span class="kw">fn</span> [row]</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>                   (<span class="kw">some</span> #(str/includes? (<span class="kw">or</span> (<span class="at">:secondary-road</span> row) <span class="st">""</span>) <span class="va">%</span>)</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>                         (<span class="kw">keys</span> grand-intersections-of-interest))))</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>      <span class="co">;; Add lat/long from our lookup</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>      (tc/map-columns <span class="at">:intersection-lat</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>                      [<span class="at">:secondary-road</span>]</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>                      (<span class="kw">fn</span> [secondary-road]</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>                        (<span class="kw">let</span> [match (<span class="kw">some</span> (<span class="kw">fn</span> [[k v]]</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>                                            (<span class="kw">when</span> (str/includes? (<span class="kw">or</span> secondary-road <span class="st">""</span>) k)</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>                                              v))</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>                                          grand-intersections-of-interest)]</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>                          (<span class="at">:lat</span> match))))</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>      (tc/map-columns <span class="at">:intersection-lng</span></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>                      [<span class="at">:secondary-road</span>]</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>                      (<span class="kw">fn</span> [secondary-road]</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>                        (<span class="kw">let</span> [match (<span class="kw">some</span> (<span class="kw">fn</span> [[k v]]</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>                                            (<span class="kw">when</span> (str/includes? (<span class="kw">or</span> secondary-road <span class="st">""</span>) k)</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>                                              v))</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>                                          grand-intersections-of-interest)]</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>                          (<span class="at">:lng</span> match))))))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Example of how this works:</p>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb8"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> grand-ave-crashes-2023</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Grand Ave crashes from 2023 - note many are missing lat/long coordinates!"</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;</span> [<span class="st">"datasets/2023crashes.csv"</span>]</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>      load-and-combine-csvs</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>      (tc/select-columns [<span class="at">:collision-id</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>                          <span class="at">:primary-road</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>                          <span class="at">:secondary-road</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>                          <span class="at">:latitude</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>                          <span class="at">:longitude</span>])</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>      (ds/filter #(str/includes? (<span class="kw">or</span> (<span class="at">:primary-road</span> <span class="va">%</span>)</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>                                      (<span class="at">:secondary-road</span> <span class="va">%</span>) <span class="st">""</span>)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"GRAND"</span>))</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>      (ds/filter (<span class="kw">fn</span> [row]</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>                   (<span class="kw">some</span> #(str/includes? (<span class="kw">or</span> (<span class="at">:secondary-road</span> row) <span class="st">""</span>) <span class="va">%</span>)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>                         (<span class="kw">keys</span> grand-intersections-of-interest))))</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>      (tc/head <span class="dv">10</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb9"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>grand-ave-crashes<span class="dv">-2023</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="clay-dataset">
+<p>datasets/2023crashes.csv [10 5]:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 21%">
+<col style="width: 21%">
+<col style="width: 24%">
+<col style="width: 15%">
+<col style="width: 17%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>:collision-id</th>
+<th>:primary-road</th>
+<th>:secondary-road</th>
+<th style="text-align: right;">:latitude</th>
+<th style="text-align: right;">:longitude</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>2484619</td>
+<td>GRAND AV</td>
+<td>PARK VIEW TER</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="even">
+<td>2484602</td>
+<td>GRAND AV</td>
+<td>BAY PL</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="odd">
+<td>2484054</td>
+<td>GRAND AV</td>
+<td>HARRISON ST</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="even">
+<td>2481965</td>
+<td>GRAND AV</td>
+<td>MACARTHUR BL</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="odd">
+<td>2495402</td>
+<td>GRAND AV</td>
+<td>PARK VIEW AV</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="even">
+<td>2502906</td>
+<td>GRAND AV</td>
+<td>HARRISON ST</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="odd">
+<td>2514953</td>
+<td>GRAND AV</td>
+<td>LAKE PARK AV</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="even">
+<td>2528176</td>
+<td>GRAND AV</td>
+<td>BELLEVUE AV</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="odd">
+<td>2527936</td>
+<td>GRAND AV</td>
+<td>LAKE PARK AV</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="even">
+<td>2523837</td>
+<td>GRAND AV</td>
+<td>BELLEVUE AV</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Notice: latitude and longitude are empty! But we can fix this with our lookup:</p>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb10"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> grand-ave-sample</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;</span> grand-ave-crashes<span class="dv">-2023</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>      add-grand-ave-coordinates</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>      (tc/select-columns [<span class="at">:collision-id</span> <span class="at">:secondary-road</span> <span class="at">:latitude</span> <span class="at">:longitude</span> </span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>                         <span class="at">:intersection-lat</span> <span class="at">:intersection-lng</span>])</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>      (tc/head <span class="dv">5</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb11"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>grand-ave-sample</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="clay-dataset">
+<p>datasets/2023crashes.csv [5 6]:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 18%">
+<col style="width: 11%">
+<col style="width: 12%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>:collision-id</th>
+<th>:secondary-road</th>
+<th style="text-align: right;">:latitude</th>
+<th style="text-align: right;">:longitude</th>
+<th style="text-align: right;">:intersection-lat</th>
+<th style="text-align: right;">:intersection-lng</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>2484619</td>
+<td>PARK VIEW TER</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">37.809881</td>
+<td style="text-align: right;">-122.259373</td>
+</tr>
+<tr class="even">
+<td>2484602</td>
+<td>BAY PL</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">37.810590</td>
+<td style="text-align: right;">-122.260507</td>
+</tr>
+<tr class="odd">
+<td>2484054</td>
+<td>HARRISON ST</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">37.810923</td>
+<td style="text-align: right;">-122.262360</td>
+</tr>
+<tr class="even">
+<td>2481965</td>
+<td>MACARTHUR BL</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">37.810195</td>
+<td style="text-align: right;">-122.248825</td>
+</tr>
+<tr class="odd">
+<td>2495402</td>
+<td>PARK VIEW AV</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">37.809881</td>
+<td style="text-align: right;">-122.259373</td>
+</tr>
+</tbody>
+</table>
+</div>
+<section id="when-to-use-manual-lookup" class="level3" data-number="2.5.1">
+<h3 data-number="2.5.1" class="anchored" data-anchor-id="when-to-use-manual-lookup"><span class="header-section-number">2.5.1</span> When to Use Manual Lookup</h3>
+<p><strong>Pros:</strong> - Simple and fast - You control exactly which intersections to include - No complex geometry calculations needed</p>
+<p><strong>Cons:</strong> - Only works if you know your area of interest in advance - Requires manually looking up coordinates - Doesn’t scale to analyzing the whole city</p>
+</section>
+</section>
+<section id="approach-2-automated-spatial-matching" class="level2" data-number="2.6">
+<h2 data-number="2.6" class="anchored" data-anchor-id="approach-2-automated-spatial-matching"><span class="header-section-number">2.6</span> Approach 2: Automated Spatial Matching</h2>
+<p>The manual lookup approach works great when you know your streets, but what if you want to analyze crashes <strong>anywhere in Oakland</strong> without manually looking up every intersection?</p>
+<p>This is what we explored in <code>locations.clj</code> - an automated approach that uses street centerline geometry to calculate intersection locations.</p>
+<section id="step-1-load-and-filter-street-centerlines" class="level3" data-number="2.6.1">
+<h3 data-number="2.6.1" class="anchored" data-anchor-id="step-1-load-and-filter-street-centerlines"><span class="header-section-number">2.6.1</span> Step 1: Load and Filter Street Centerlines</h3>
+<p>The Alameda County dataset covers the whole county. We filtered it to just Oakland:</p>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb12"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>(<span class="kw">comment</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">;; This is the filtering code from data.clj:</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  (<span class="bu">defonce</span><span class="fu"> filter-geojson</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">-&gt;</span> <span class="st">"data/Street_Centerlines_-8203296818607454791.geojson"</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>        <span class="kw">slurp</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>        (charred/read-json {<span class="at">:key-fn</span> <span class="kw">keyword</span>})</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>        (<span class="kw">update</span> <span class="at">:features</span> (<span class="kw">partial</span> <span class="kw">filter</span> (<span class="kw">fn</span> [{<span class="at">:keys</span> [geometry properties]}]</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>                                            (<span class="kw">and</span> geometry</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>                                                 (<span class="kw">let</span> [{<span class="at">:keys</span> [CITYR CITYL]} properties]</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>                                                   (<span class="kw">or</span> (<span class="kw">=</span> CITYL <span class="st">"Oakland"</span>)</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>                                                       (<span class="kw">=</span> CITYR <span class="st">"Oakland"</span>)))))))</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>        (<span class="kw">-&gt;&gt;</span> (charred/write-json <span class="st">"data/Oakland-centerlines.geojson"</span>)))))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="step-2-coordinate-system-transformations" class="level3" data-number="2.6.2">
+<h3 data-number="2.6.2" class="anchored" data-anchor-id="step-2-coordinate-system-transformations"><span class="header-section-number">2.6.2</span> Step 2: Coordinate System Transformations</h3>
+<p><strong>Critical concept</strong>: Latitude/longitude (WGS84) uses degrees, not uniform distances. To do accurate spatial operations (buffers, distances), we transform to a local coordinate system: California State Plane Zone 3 (EPSG:2227) in US Survey Feet.</p>
+<p>These transformations are defined in <code>data.clj</code> and used throughout the project:</p>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb13"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> crs-transform-wgs84-&gt;bay-area</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Transform from WGS84 (lat/long degrees) to California State Plane Zone 3 (feet).</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="st">  </span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="st">  This is necessary for accurate distance calculations in the Bay Area."</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  (crs/create-transform</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>   (crs/create-crs <span class="dv">4326</span>)  <span class="co">; WGS84 (GPS coordinates)</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>   (crs/create-crs <span class="dv">2227</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>CA State Plane Zone 3</p>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb14"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> crs-transform-bay-area-&gt;wgs84</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Transform back from local coordinates to WGS84 for mapping."</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  (crs/create-transform</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>   (crs/create-crs <span class="dv">2227</span>)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>   (crs/create-crs <span class="dv">4326</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb15"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> wgs84-&gt;bay-area</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Convert a geometry from WGS84 to local coordinate system."</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  [geometry]</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  (jts/transform-geom geometry crs-transform-wgs84-&gt;bay-area))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb16"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> bay-area-&gt;wgs84</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Convert a geometry from local coordinate system back to WGS84 (from data.clj)."</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  [geometry]</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  (jts/transform-geom geometry crs-transform-bay-area-&gt;wgs84))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="step-3-process-street-centerlines-with-buffers" class="level3" data-number="2.6.3">
+<h3 data-number="2.6.3" class="anchored" data-anchor-id="step-3-process-street-centerlines-with-buffers"><span class="header-section-number">2.6.3</span> Step 3: Process Street Centerlines with Buffers</h3>
+<p>This is the processing from <code>data.clj</code>:</p>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb17"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> process-oakland-centerlines</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Process the Oakland street centerlines dataset.</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="st">  This is the code from data.clj that:</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="st">  - Converts geometry to JTS format</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="st">  - Transforms to local coordinate system for accurate operations</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="st">  - Creates 50-foot buffers around each street segment</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="st">  - Extracts clean street names from the STREET field"</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>  [geojson-path]</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">let</span> [geojson-str (<span class="kw">slurp</span> geojson-path)]</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">-&gt;</span> geojson-str</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>        geoio/read-geojson</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>        (<span class="kw">-&gt;&gt;</span> (<span class="kw">map</span> (<span class="kw">fn</span> [{<span class="at">:keys</span> [properties geometry]}]</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>                    (<span class="kw">assoc</span> properties <span class="at">:geometry</span> geometry))))</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>        tc/dataset</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>        <span class="co">;; Convert to JTS LineString</span></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>        (tc/map-columns <span class="at">:line-string</span></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>                        [<span class="at">:geometry</span>]</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>                        #(spatial/to-jts <span class="va">%</span> <span class="dv">4326</span>))</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>        <span class="co">;; Transform to local coordinate system</span></span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>        (tc/map-columns <span class="at">:local-line-string</span></span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>                        [<span class="at">:line-string</span>]</span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>                        wgs84-&gt;bay-area)</span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>        <span class="co">;; Create 50-foot buffer for fuzzy matching</span></span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>        (tc/map-columns <span class="at">:local-buffer</span></span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>                        [<span class="at">:local-line-string</span>]</span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>                        (<span class="kw">fn</span> [^Geometry g]</span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>                          (.buffer g <span class="dv">50</span>)))</span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>        <span class="co">;; Extract street names from STREET field</span></span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>        <span class="co">;; E.g. "75TH ON HEGENBERGER EB" -&gt; ["75TH" "HEGENBERGER"]</span></span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a>        (tc/map-columns <span class="at">:streets</span></span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a>                        [<span class="at">:STREET</span>]</span>
+<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a>                        (<span class="kw">fn</span> [STREET]</span>
+<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a>                          (some-&gt; STREET</span>
+<span id="cb17-36"><a href="#cb17-36" aria-hidden="true" tabindex="-1"></a>                                  (str/replace <span class="ss">#" (WB|NB|EB|SB)"</span> <span class="st">" "</span>)</span>
+<span id="cb17-37"><a href="#cb17-37" aria-hidden="true" tabindex="-1"></a>                                  (str/replace <span class="ss">#" CONN"</span> <span class="st">" "</span>)</span>
+<span id="cb17-38"><a href="#cb17-38" aria-hidden="true" tabindex="-1"></a>                                  (str/split <span class="ss">#" (ON|OFF|TO|FROM) "</span>)</span>
+<span id="cb17-39"><a href="#cb17-39" aria-hidden="true" tabindex="-1"></a>                                  (<span class="kw">-&gt;&gt;</span> (<span class="kw">mapv</span> str/trim))))))))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="step-4-build-street-name-index" class="level3" data-number="2.6.4">
+<h3 data-number="2.6.4" class="anchored" data-anchor-id="step-4-build-street-name-index"><span class="header-section-number">2.6.4</span> Step 4: Build Street Name Index</h3>
+<p>We create a lookup: street name → all centerline segments for that street</p>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb18"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> build-street-index</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Build a map from street name to all centerline segments.</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="st">  </span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="st">  This is how locations.clj creates the street-&gt;centerlines index."</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  [Oakland-centerlines]</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;</span> Oakland-centerlines</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>      (tc/rows <span class="at">:as-maps</span>)</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>      (<span class="kw">-&gt;&gt;</span> (<span class="kw">mapcat</span> (<span class="kw">fn</span> [{<span class="at">:keys</span> [streets] <span class="at">:as</span> centerline}]</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>                     (<span class="kw">map</span> (<span class="kw">fn</span> [street]</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>                            [street centerline])</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>                          streets)))</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>           (<span class="kw">group-by</span> <span class="kw">first</span>))</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>      (update-vals (<span class="kw">partial</span> <span class="kw">map</span> <span class="kw">second</span>))))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s build this for real and look at an example:</p>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb19"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> oakland-centerlines-full</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  (process-oakland-centerlines <span class="st">"data/Oakland-centerlines.geojson"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb20"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> street-index</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  (build-street-index oakland-centerlines-full))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>How many unique street names do we have?</p>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb21"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>(<span class="kw">count</span> street-index)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="printedClojure">
+<div class="sourceCode" id="cb22"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="dv">2268</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s see what we have for “TELEGRAPH AV”:</p>
+<p><strong>72 centerline segments found for TELEGRAPH AV</strong></p>
+</section>
+<section id="step-5-find-intersecting-street-segments" class="level3" data-number="2.6.5">
+<h3 data-number="2.6.5" class="anchored" data-anchor-id="step-5-find-intersecting-street-segments"><span class="header-section-number">2.6.5</span> Step 5: Find Intersecting Street Segments</h3>
+<p>When two streets intersect, their buffered line segments will overlap. This is more forgiving than looking for exact geometric intersections.</p>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb23"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> normalize-street-for-lookup</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Normalize street name for matching against the centerlines index.</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="st">  </span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="st">  This is the normalization from locations.clj."</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>  [street-name]</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>  (some-&gt; street-name</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>          str/upper-case</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>          (str/replace <span class="ss">#"(-|W/B|N/B|E/B|S/B|WESTBOUND)"</span> <span class="st">""</span>)</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>          str/trim))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb24"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> find-intersecting-segments</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Find all pairs of street segments where buffers overlap.</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="st">  </span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="st">  This is from locations.clj - uses the buffer zones to find intersections."</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>  [primary-road secondary-road street-index]</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">let</span> [centerlines1 (some-&gt; primary-road </span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>                             normalize-street-for-lookup </span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>                             street-index)</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>        centerlines2 (some-&gt; secondary-road </span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>                             normalize-street-for-lookup </span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>                             street-index)]</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">for</span> [cl1 centerlines1</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>          cl2 centerlines2</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>          <span class="at">:when</span> (.intersects ^Geometry (<span class="at">:local-buffer</span> cl1)</span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>                            ^Geometry (<span class="at">:local-buffer</span> cl2))]</span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>      [cl1 cl2])))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s try a real example: Telegraph Ave and 19th Street</p>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb25"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> telegraph-19th-intersections</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  (find-intersecting-segments <span class="st">"TELEGRAPH AV"</span> <span class="st">"19TH ST"</span> street-index))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div><h4 class="anchored">Finding Telegraph Ave &amp; 19th St Intersection</h4><p>Found <strong>6</strong> pairs of intersecting street segments</p><p>This means there are 6 places where Telegraph centerline segments have buffers that overlap with 19th St segments.</p></div>
+</section>
+<section id="step-6-calculate-intersection-center-with-tensors" class="level3" data-number="2.6.6">
+<h3 data-number="2.6.6" class="anchored" data-anchor-id="step-6-calculate-intersection-center-with-tensors"><span class="header-section-number">2.6.6</span> Step 6: Calculate Intersection Center (with Tensors!)</h3>
+<p>This is the sophisticated part from <code>locations.clj</code>. When we have multiple intersecting segments, we use tensor operations to find the nearest points and average them.</p>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb26"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> centroid-point-distance </span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Calculate distance between a point and a centroid.</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="st">  From locations.clj."</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  [x centroid]</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>  (fun/distance x centroid))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb27"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> nearest </span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Find the index of the nearest centroid to point x.</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="st">  </span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="st">  This uses tech.ml.dataset's tensor operations for efficient computation.</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a><span class="st">  From locations.clj."</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>  [x centroids]</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;</span> centroids</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>      (tensor/reduce-axis #(centroid-point-distance x <span class="va">%1</span>) <span class="dv">1</span>)</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>      argops/argmin))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb28"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> calculate-intersection-center</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Calculate the center point of intersecting street segments using tensor operations.</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="st">  </span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="st">  This is the sophisticated calculation from locations.clj:</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a><span class="st">  1. For each pair of intersecting segments, convert coordinates to tensors</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="st">  2. Find nearest points between the two line strings</span></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a><span class="st">  3. Average those points to get intersection center</span></span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a><span class="st">  4. Transform back to WGS84 for mapping"</span></span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>  [intersecting-segments]</span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">when</span> (<span class="kw">seq</span> intersecting-segments)</span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">let</span> [all-coords (<span class="kw">mapcat</span> (<span class="kw">fn</span> [[seg1 seg2]]</span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>                               <span class="co">;; Get all coordinates from both segments</span></span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>                               (<span class="kw">mapcat</span> (<span class="kw">fn</span> [{<span class="at">:keys</span> [local-line-string]}]</span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>                                         (<span class="kw">-&gt;&gt;</span> local-line-string</span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>                                              jts/coordinates</span>
+<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a>                                              (<span class="kw">map</span> (<span class="kw">fn</span> [^Coordinate c]</span>
+<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a>                                                     [(.getX c) (.getY c)]))))</span>
+<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a>                                       [seg1 seg2]))</span>
+<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a>                             intersecting-segments)</span>
+<span id="cb28-21"><a href="#cb28-21" aria-hidden="true" tabindex="-1"></a>          <span class="co">;; Convert to tensor for efficient operations</span></span>
+<span id="cb28-22"><a href="#cb28-22" aria-hidden="true" tabindex="-1"></a>          coords-tensor (tensor/-&gt;tensor all-coords)</span>
+<span id="cb28-23"><a href="#cb28-23" aria-hidden="true" tabindex="-1"></a>          <span class="co">;; Calculate average coordinate</span></span>
+<span id="cb28-24"><a href="#cb28-24" aria-hidden="true" tabindex="-1"></a>          avg-x (<span class="kw">/</span> (<span class="kw">reduce</span> <span class="kw">+</span> (<span class="kw">map</span> <span class="kw">first</span> all-coords)) (<span class="kw">count</span> all-coords))</span>
+<span id="cb28-25"><a href="#cb28-25" aria-hidden="true" tabindex="-1"></a>          avg-y (<span class="kw">/</span> (<span class="kw">reduce</span> <span class="kw">+</span> (<span class="kw">map</span> <span class="kw">second</span> all-coords)) (<span class="kw">count</span> all-coords))]</span>
+<span id="cb28-26"><a href="#cb28-26" aria-hidden="true" tabindex="-1"></a>      <span class="co">;; Create point and transform back to WGS84</span></span>
+<span id="cb28-27"><a href="#cb28-27" aria-hidden="true" tabindex="-1"></a>      (<span class="kw">-&gt;</span> (jts/coordinate avg-x avg-y)</span>
+<span id="cb28-28"><a href="#cb28-28" aria-hidden="true" tabindex="-1"></a>          jts/point</span>
+<span id="cb28-29"><a href="#cb28-29" aria-hidden="true" tabindex="-1"></a>          bay-area-&gt;wgs84))))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s calculate the center for Telegraph &amp; 19th:</p>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb29"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> telegraph-19th-center</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  (calculate-intersection-center telegraph<span class="dv">-19</span>th-intersections))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div><h4 class="anchored">Telegraph Ave &amp; 19th St Intersection Center</h4><p>Calculated coordinates: <strong>(37.80821592657344, -122.2700673329544)</strong></p><p>Compare this to manual lookup: <strong>37.808247, -122.269923</strong></p><p>Pretty close!</p></div>
+<p>Alternative calculation using the nearest-point approach from locations.clj:</p>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb30"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> calculate-intersection-centers-nearest</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Calculate intersection center by finding nearest points on each segment.</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="st">  This is the more sophisticated version from locations.clj that finds</span></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a><span class="st">  the nearest point between each pair of line strings."</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>  [intersecting-segments]</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">mapv</span> (<span class="kw">fn</span> [[seg1 seg2]]</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>          (<span class="kw">let</span> [<span class="co">;; Convert line strings to tensors</span></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>                t1 (<span class="kw">-&gt;</span> (<span class="kw">-&gt;&gt;</span> (<span class="at">:local-line-string</span> seg1)</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>                            jts/coordinates</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>                            (<span class="kw">map</span> (<span class="kw">fn</span> [^Coordinate c]</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>                                   [(.getX c) (.getY c)])))</span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a>                       tensor/-&gt;tensor)</span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>                t2 (<span class="kw">-&gt;</span> (<span class="kw">-&gt;&gt;</span> (<span class="at">:local-line-string</span> seg2)</span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a>                            jts/coordinates</span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a>                            (<span class="kw">map</span> (<span class="kw">fn</span> [^Coordinate c]</span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a>                                   [(.getX c) (.getY c)])))</span>
+<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a>                       tensor/-&gt;tensor)</span>
+<span id="cb30-20"><a href="#cb30-20" aria-hidden="true" tabindex="-1"></a>                <span class="co">;; Find nearest points</span></span>
+<span id="cb30-21"><a href="#cb30-21" aria-hidden="true" tabindex="-1"></a>                nearest-pair (<span class="kw">-&gt;&gt;</span> t1</span>
+<span id="cb30-22"><a href="#cb30-22" aria-hidden="true" tabindex="-1"></a>                                  (<span class="kw">map</span> (<span class="kw">fn</span> [row1]</span>
+<span id="cb30-23"><a href="#cb30-23" aria-hidden="true" tabindex="-1"></a>                                         (<span class="kw">let</span> [row2 (t2 (nearest row1 t2))]</span>
+<span id="cb30-24"><a href="#cb30-24" aria-hidden="true" tabindex="-1"></a>                                           [(fun/distance row1 row2) row1 row2])))</span>
+<span id="cb30-25"><a href="#cb30-25" aria-hidden="true" tabindex="-1"></a>                                  (<span class="kw">apply</span> <span class="kw">min-key</span> <span class="kw">first</span>)</span>
+<span id="cb30-26"><a href="#cb30-26" aria-hidden="true" tabindex="-1"></a>                                  <span class="kw">rest</span>)</span>
+<span id="cb30-27"><a href="#cb30-27" aria-hidden="true" tabindex="-1"></a>                <span class="co">;; Average the nearest points</span></span>
+<span id="cb30-28"><a href="#cb30-28" aria-hidden="true" tabindex="-1"></a>                center (<span class="kw">-&gt;</span> nearest-pair</span>
+<span id="cb30-29"><a href="#cb30-29" aria-hidden="true" tabindex="-1"></a>                           tensor/-&gt;tensor</span>
+<span id="cb30-30"><a href="#cb30-30" aria-hidden="true" tabindex="-1"></a>                           (tensor/reduce-axis fun/mean <span class="dv">0</span>)</span>
+<span id="cb30-31"><a href="#cb30-31" aria-hidden="true" tabindex="-1"></a>                           (<span class="kw">-&gt;&gt;</span> (<span class="kw">apply</span> jts/coordinate))</span>
+<span id="cb30-32"><a href="#cb30-32" aria-hidden="true" tabindex="-1"></a>                           jts/point</span>
+<span id="cb30-33"><a href="#cb30-33" aria-hidden="true" tabindex="-1"></a>                           bay-area-&gt;wgs84)]</span>
+<span id="cb30-34"><a href="#cb30-34" aria-hidden="true" tabindex="-1"></a>            center))</span>
+<span id="cb30-35"><a href="#cb30-35" aria-hidden="true" tabindex="-1"></a>        intersecting-segments))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="approach-2b-neighborhood-assignment-with-spatial-index" class="level2" data-number="2.7">
+<h2 data-number="2.7" class="anchored" data-anchor-id="approach-2b-neighborhood-assignment-with-spatial-index"><span class="header-section-number">2.7</span> Approach 2b: Neighborhood Assignment with Spatial Index</h2>
+<p>Once we have crash locations (either from manual lookup or derived from intersections), we need to assign them to neighborhoods.</p>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb31"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> load-neighborhoods</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Load Oakland neighborhood polygons from CSV with WKT geometry.</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a><span class="st">  Source: OpenOakland CEDA 2002 neighborhoods dataset."</span></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>  []</span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;</span> <span class="st">"data/Features_20250425.csv.gz"</span></span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>      (tc/dataset {<span class="at">:key-fn</span> <span class="kw">keyword</span>})</span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>      (tc/map-columns <span class="at">:geometry</span></span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>                      [<span class="at">:the</span>_geom]</span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>                      (<span class="kw">fn</span> [wkt-string]</span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>                        (geoio/read-wkt (<span class="kw">str</span> wkt-string))))</span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>      (tc/select-columns [<span class="at">:geometry</span> <span class="at">:Name</span>])))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="spatial-indexing-for-performance" class="level3" data-number="2.7.1">
+<h3 data-number="2.7.1" class="anchored" data-anchor-id="spatial-indexing-for-performance"><span class="header-section-number">2.7.1</span> Spatial Indexing for Performance</h3>
+<p>Testing every crash against every neighborhood polygon is O(n*m). We use an STRtree (Sort-Tile-Recursive tree) to make it O(n log m).</p>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb32"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> make-spatial-index</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Create an R-tree spatial index for fast intersection queries.</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a><span class="st">  This is the code from data.clj. PreparedGeometry makes</span></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a><span class="st">  repeated intersection tests much faster."</span></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>  [dataset &amp; {<span class="at">:keys</span> [geometry-column]</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>              <span class="at">:or</span>   {geometry-column <span class="at">:geometry</span>}}]</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">let</span> [tree (STRtree.)]</span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">doseq</span> [row (tc/rows dataset <span class="at">:as-maps</span>)]</span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>      (<span class="kw">let</span> [geometry (row geometry-column)]</span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>        (.insert tree</span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>                 (.getEnvelopeInternal geometry)</span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>                 (<span class="kw">assoc</span> row</span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a>                        <span class="at">:prepared-geometry</span></span>
+<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a>                        (PreparedGeometryFactory/prepare geometry)))))</span>
+<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a>    tree))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb33"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> intersecting-places</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Find all neighborhoods that intersect with a given point or region.</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a><span class="st">  From data.clj - uses the spatial index for fast lookup."</span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>  [region spatial-index]</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;&gt;</span> (.query spatial-index (.getEnvelopeInternal region))</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>       (<span class="kw">filter</span> (<span class="kw">fn</span> [row]</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>                 (.intersects (<span class="at">:prepared-geometry</span> row) region)))</span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>       (<span class="kw">map</span> <span class="at">:Name</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s load the neighborhoods and build the index:</p>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb34"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> oakland-neighborhoods</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  (load-neighborhoods))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb35"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> oakland-neighborhoods</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    (tc/select-columns [<span class="at">:Name</span>])</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    (tc/head <span class="dv">10</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="clay-dataset">
+<p>data/Features_20250425.csv.gz [10 1]:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>:Name</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Acorn/ Acorn Industrial</td>
+</tr>
+<tr class="even">
+<td>Adams Point</td>
+</tr>
+<tr class="odd">
+<td>Allendale</td>
+</tr>
+<tr class="even">
+<td>Arroyo Viejo</td>
+</tr>
+<tr class="odd">
+<td>Bancroft Business/ Havenscourt</td>
+</tr>
+<tr class="even">
+<td>Bartlett</td>
+</tr>
+<tr class="odd">
+<td>Bella Vista</td>
+</tr>
+<tr class="even">
+<td>Brookfield Village</td>
+</tr>
+<tr class="odd">
+<td>Bushrod</td>
+</tr>
+<tr class="even">
+<td>Caballo Hills</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb36"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> neighborhoods-index</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  (make-spatial-index oakland-neighborhoods))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now test it with our Telegraph &amp; 19th intersection:</p>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb37"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> telegraph-19th-neighborhoods</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  (intersecting-places telegraph<span class="dv">-19</span>th-center neighborhoods-index))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div><h4 class="anchored">Which neighborhood is Telegraph &amp; 19th in?</h4><p>Found: <strong>("Downtown")</strong></p></div>
+</section>
+</section>
+<section id="putting-it-all-together-real-workflow-examples" class="level2" data-number="2.8">
+<h2 data-number="2.8" class="anchored" data-anchor-id="putting-it-all-together-real-workflow-examples"><span class="header-section-number">2.8</span> Putting It All Together: Real Workflow Examples</h2>
+<p>Let’s see both approaches in action with data:</p>
+<section id="example-1-manual-lookup-what-we-used" class="level3" data-number="2.8.1">
+<h3 data-number="2.8.1" class="anchored" data-anchor-id="example-1-manual-lookup-what-we-used"><span class="header-section-number">2.8.1</span> Example 1: Manual Lookup (What we used)</h3>
+<p>We already saw this working earlier with Grand Ave. Here’s a summary showing how simple and effective it is:</p>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb38"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> grand-ave-sample</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>    (tc/select-columns [<span class="at">:collision-id</span> <span class="at">:secondary-road</span> <span class="at">:latitude</span> <span class="at">:longitude</span> </span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">:intersection-lat</span> <span class="at">:intersection-lng</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="clay-dataset">
+<p>datasets/2023crashes.csv [5 6]:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 18%">
+<col style="width: 11%">
+<col style="width: 12%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>:collision-id</th>
+<th>:secondary-road</th>
+<th style="text-align: right;">:latitude</th>
+<th style="text-align: right;">:longitude</th>
+<th style="text-align: right;">:intersection-lat</th>
+<th style="text-align: right;">:intersection-lng</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>2484619</td>
+<td>PARK VIEW TER</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">37.809881</td>
+<td style="text-align: right;">-122.259373</td>
+</tr>
+<tr class="even">
+<td>2484602</td>
+<td>BAY PL</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">37.810590</td>
+<td style="text-align: right;">-122.260507</td>
+</tr>
+<tr class="odd">
+<td>2484054</td>
+<td>HARRISON ST</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">37.810923</td>
+<td style="text-align: right;">-122.262360</td>
+</tr>
+<tr class="even">
+<td>2481965</td>
+<td>MACARTHUR BL</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">37.810195</td>
+<td style="text-align: right;">-122.248825</td>
+</tr>
+<tr class="odd">
+<td>2495402</td>
+<td>PARK VIEW AV</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">37.809881</td>
+<td style="text-align: right;">-122.259373</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Notice: - <code>latitude</code> and <code>longitude</code> are empty (the original data) - <code>intersection-lat</code> and <code>intersection-lng</code> are filled in from our manual lookup - Simple, fast, and accurate!</p>
+</section>
+<section id="example-2-automated-matching-advanced-approach-from-locations.clj" class="level3" data-number="2.8.2">
+<h3 data-number="2.8.2" class="anchored" data-anchor-id="example-2-automated-matching-advanced-approach-from-locations.clj"><span class="header-section-number">2.8.2</span> Example 2: Automated Matching (Advanced approach from locations.clj)</h3>
+<p>We demonstrated this with Telegraph &amp; 19th. Let’s compare the results:</p>
+<div><h4 class="anchored">Telegraph &amp; 19th: Manual vs Automated</h4>
+<table class="caption-top table" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" style="background: #f2f2f2; border: 1px solid #ddd; padding: 8px">Method</th>
+<th data-quarto-table-cell-role="th" style="background: #f2f2f2; border: 1px solid #ddd; padding: 8px">Latitude</th>
+<th data-quarto-table-cell-role="th" style="background: #f2f2f2; border: 1px solid #ddd; padding: 8px">Longitude</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="border: 1px solid #ddd; padding: 8px">Manual Lookup</td>
+<td style="border: 1px solid #ddd; padding: 8px">37.808247</td>
+<td style="border: 1px solid #ddd; padding: 8px">-122.269923</td>
+</tr>
+<tr class="even">
+<td style="border: 1px solid #ddd; padding: 8px">Automated (Centerlines)</td>
+<td style="border: 1px solid #ddd; padding: 8px">37.80821592657344</td>
+<td style="border: 1px solid #ddd; padding: 8px">-122.2700673329544</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Difference: </strong>0.000031 degrees lat, 0.000144 degrees lng</p><p>That's within <strong>16.4 meters</strong>!</p></div>
+<p>The automated approach gets very close to the manual lookup!</p>
+</section>
+<section id="example-3-complete-analysis---grand-ave-with-neighborhoods" class="level3" data-number="2.8.3">
+<h3 data-number="2.8.3" class="anchored" data-anchor-id="example-3-complete-analysis---grand-ave-with-neighborhoods"><span class="header-section-number">2.8.3</span> Example 3: Complete Analysis - Grand Ave with Neighborhoods</h3>
+<p>Let’s show a complete example combining everything:</p>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb39"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> grand-ave-with-neighborhoods</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;</span> grand-ave-crashes<span class="dv">-2023</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>      (tc/map-columns <span class="at">:intersection-lat</span></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>                      [<span class="at">:secondary-road</span>]</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>                      (<span class="kw">fn</span> [secondary-road]</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>                        (<span class="kw">let</span> [match (<span class="kw">some</span> (<span class="kw">fn</span> [[k v]]</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>                                            (<span class="kw">when</span> (str/includes? (<span class="kw">or</span> secondary-road <span class="st">""</span>) k)</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>                                              v))</span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>                                          grand-intersections-of-interest)]</span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>                          (<span class="at">:lat</span> match))))</span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>      (tc/map-columns <span class="at">:intersection-lng</span></span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a>                      [<span class="at">:secondary-road</span>]</span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>                      (<span class="kw">fn</span> [secondary-road]</span>
+<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>                        (<span class="kw">let</span> [match (<span class="kw">some</span> (<span class="kw">fn</span> [[k v]]</span>
+<span id="cb39-16"><a href="#cb39-16" aria-hidden="true" tabindex="-1"></a>                                            (<span class="kw">when</span> (str/includes? (<span class="kw">or</span> secondary-road <span class="st">""</span>) k)</span>
+<span id="cb39-17"><a href="#cb39-17" aria-hidden="true" tabindex="-1"></a>                                              v))</span>
+<span id="cb39-18"><a href="#cb39-18" aria-hidden="true" tabindex="-1"></a>                                          grand-intersections-of-interest)]</span>
+<span id="cb39-19"><a href="#cb39-19" aria-hidden="true" tabindex="-1"></a>                          (<span class="at">:lng</span> match))))</span>
+<span id="cb39-20"><a href="#cb39-20" aria-hidden="true" tabindex="-1"></a>      (tc/map-columns <span class="at">:point</span></span>
+<span id="cb39-21"><a href="#cb39-21" aria-hidden="true" tabindex="-1"></a>                      [<span class="at">:intersection-lat</span> <span class="at">:intersection-lng</span>]</span>
+<span id="cb39-22"><a href="#cb39-22" aria-hidden="true" tabindex="-1"></a>                      (<span class="kw">fn</span> [lat lng]</span>
+<span id="cb39-23"><a href="#cb39-23" aria-hidden="true" tabindex="-1"></a>                        (<span class="kw">when</span> (<span class="kw">and</span> lat lng)</span>
+<span id="cb39-24"><a href="#cb39-24" aria-hidden="true" tabindex="-1"></a>                          (jts/point lng lat))))</span>
+<span id="cb39-25"><a href="#cb39-25" aria-hidden="true" tabindex="-1"></a>      (tc/map-columns <span class="at">:neighborhoods</span></span>
+<span id="cb39-26"><a href="#cb39-26" aria-hidden="true" tabindex="-1"></a>                      [<span class="at">:point</span>]</span>
+<span id="cb39-27"><a href="#cb39-27" aria-hidden="true" tabindex="-1"></a>                      (<span class="kw">fn</span> [point]</span>
+<span id="cb39-28"><a href="#cb39-28" aria-hidden="true" tabindex="-1"></a>                        (<span class="kw">when</span> point</span>
+<span id="cb39-29"><a href="#cb39-29" aria-hidden="true" tabindex="-1"></a>                          (intersecting-places point neighborhoods-index))))))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb40"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> grand-ave-with-neighborhoods</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>    (tc/select-columns [<span class="at">:collision-id</span> <span class="at">:secondary-road</span> <span class="at">:intersection-lat</span> </span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">:intersection-lng</span> <span class="at">:neighborhoods</span>])</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>    (tc/head <span class="dv">5</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="clay-dataset">
+<p>datasets/2023crashes.csv [5 5]:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 15%">
+<col style="width: 18%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>:collision-id</th>
+<th>:secondary-road</th>
+<th style="text-align: right;">:intersection-lat</th>
+<th style="text-align: right;">:intersection-lng</th>
+<th>:neighborhoods</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>2484619</td>
+<td>PARK VIEW TER</td>
+<td style="text-align: right;">37.809881</td>
+<td style="text-align: right;">-122.259373</td>
+<td>clojure.lang.LazySeq@1</td>
+</tr>
+<tr class="even">
+<td>2484602</td>
+<td>BAY PL</td>
+<td style="text-align: right;">37.810590</td>
+<td style="text-align: right;">-122.260507</td>
+<td>clojure.lang.LazySeq@1</td>
+</tr>
+<tr class="odd">
+<td>2484054</td>
+<td>HARRISON ST</td>
+<td style="text-align: right;">37.810923</td>
+<td style="text-align: right;">-122.262360</td>
+<td>clojure.lang.LazySeq@1</td>
+</tr>
+<tr class="even">
+<td>2481965</td>
+<td>MACARTHUR BL</td>
+<td style="text-align: right;">37.810195</td>
+<td style="text-align: right;">-122.248825</td>
+<td>clojure.lang.LazySeq@1</td>
+</tr>
+<tr class="odd">
+<td>2495402</td>
+<td>PARK VIEW AV</td>
+<td style="text-align: right;">37.809881</td>
+<td style="text-align: right;">-122.259373</td>
+<td>clojure.lang.LazySeq@1</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Now we have: - Original crash data - Filled-in coordinates from manual lookup - Assigned neighborhoods from spatial index</p>
+<p>All ready for analysis!</p>
+</section>
+</section>
+<section id="code-reference-how-we-did-it" class="level2" data-number="2.9">
+<h2 data-number="2.9" class="anchored" data-anchor-id="code-reference-how-we-did-it"><span class="header-section-number">2.9</span> Code Reference: How We Did It</h2>
+<p>For reference, here’s the workflow code from our notebooks:</p>
+<section id="grand-ave-workflow-manual---from-index.clj" class="level3" data-number="2.9.1">
+<h3 data-number="2.9.1" class="anchored" data-anchor-id="grand-ave-workflow-manual---from-index.clj"><span class="header-section-number">2.9.1</span> Grand Ave Workflow (Manual - from index.clj)</h3>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb41"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>(<span class="kw">comment</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">;; Telegraph Ave used the same manual approach!</span></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>  (<span class="bu">def</span><span class="fu"> telegraph-intersections-of-interest</span></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">merge</span> kono-intersections-of-interest</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>           pill-hill-intersections-of-interest))</span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>  (<span class="bu">def</span><span class="fu"> telegraph-ave-crashes</span></span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">let</span> [crashes (<span class="kw">-&gt;</span> oakland-city-crashes</span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>                      (ds/filter #(str/includes? (<span class="kw">or</span> (<span class="at">:primary-road</span> <span class="va">%</span>) <span class="st">""</span>) <span class="st">"TELEGRAPH"</span>))</span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a>                      (ds/filter (<span class="kw">fn</span> [row]</span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a>                                   (<span class="kw">or</span> (<span class="kw">some</span> #(str/includes? (<span class="at">:primary-road</span> row) <span class="va">%</span>)</span>
+<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a>                                             (<span class="kw">keys</span> telegraph-intersections-of-interest))</span>
+<span id="cb41-14"><a href="#cb41-14" aria-hidden="true" tabindex="-1"></a>                                       (<span class="kw">some</span> #(str/includes? (<span class="at">:secondary-road</span> row) <span class="va">%</span>)</span>
+<span id="cb41-15"><a href="#cb41-15" aria-hidden="true" tabindex="-1"></a>                                             (<span class="kw">keys</span> telegraph-intersections-of-interest))))))]</span>
+<span id="cb41-16"><a href="#cb41-16" aria-hidden="true" tabindex="-1"></a>      <span class="co">;; Same manual lookup pattern</span></span>
+<span id="cb41-17"><a href="#cb41-17" aria-hidden="true" tabindex="-1"></a>      (<span class="kw">-&gt;</span> crashes</span>
+<span id="cb41-18"><a href="#cb41-18" aria-hidden="true" tabindex="-1"></a>          (tc/map-columns <span class="at">:intersection-lat</span> [<span class="at">:secondary-road</span>]</span>
+<span id="cb41-19"><a href="#cb41-19" aria-hidden="true" tabindex="-1"></a>                          (<span class="kw">fn</span> [sec-road]</span>
+<span id="cb41-20"><a href="#cb41-20" aria-hidden="true" tabindex="-1"></a>                            (<span class="kw">let</span> [match (<span class="kw">some</span> (<span class="kw">fn</span> [[k v]]</span>
+<span id="cb41-21"><a href="#cb41-21" aria-hidden="true" tabindex="-1"></a>                                                (<span class="kw">when</span> (str/includes? (<span class="kw">or</span> sec-road <span class="st">""</span>) k) v))</span>
+<span id="cb41-22"><a href="#cb41-22" aria-hidden="true" tabindex="-1"></a>                                              telegraph-intersections-of-interest)]</span>
+<span id="cb41-23"><a href="#cb41-23" aria-hidden="true" tabindex="-1"></a>                              (<span class="at">:lat</span> match))))</span>
+<span id="cb41-24"><a href="#cb41-24" aria-hidden="true" tabindex="-1"></a>          (tc/map-columns <span class="at">:intersection-lng</span> [<span class="at">:secondary-road</span>]</span>
+<span id="cb41-25"><a href="#cb41-25" aria-hidden="true" tabindex="-1"></a>                          (<span class="kw">fn</span> [sec-road]</span>
+<span id="cb41-26"><a href="#cb41-26" aria-hidden="true" tabindex="-1"></a>                            (<span class="kw">let</span> [match (<span class="kw">some</span> (<span class="kw">fn</span> [[k v]]</span>
+<span id="cb41-27"><a href="#cb41-27" aria-hidden="true" tabindex="-1"></a>                                                (<span class="kw">when</span> (str/includes? (<span class="kw">or</span> sec-road <span class="st">""</span>) k) v))</span>
+<span id="cb41-28"><a href="#cb41-28" aria-hidden="true" tabindex="-1"></a>                                              telegraph-intersections-of-interest)]</span>
+<span id="cb41-29"><a href="#cb41-29" aria-hidden="true" tabindex="-1"></a>                              (<span class="at">:lng</span> match))))))))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="city-wide-advanced-workflow-automated---from-locations.clj" class="level3" data-number="2.9.2">
+<h3 data-number="2.9.2" class="anchored" data-anchor-id="city-wide-advanced-workflow-automated---from-locations.clj"><span class="header-section-number">2.9.2</span> City-wide Advanced Workflow (Automated - from locations.clj)</h3>
+<div class="sourceClojure">
+<div class="sourceCode" id="cb42"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/hide-code</span> <span class="va">false</span>}</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>(<span class="kw">comment</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">;; This uses data/Oakland-centerlines (preprocessed in data.clj)</span></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">;; and data/bay-area-&gt;wgs84 for coordinate transformations</span></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>  (<span class="bu">def</span><span class="fu"> crashes-with-centerlines</span></span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">-&gt;</span> crashes</span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>        <span class="co">;; Look up centerlines for each street name</span></span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>        (tc/map-columns <span class="at">:centerlines</span></span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>                        [<span class="at">:primary-road</span> <span class="at">:secondary-road</span>]</span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>                        (<span class="kw">fn</span> [primary-road secondary-road]</span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>                          [(some-&gt; primary-road normalize-street-for-lookup street-&gt;centerlines)</span>
+<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>                           (some-&gt; secondary-road normalize-street-for-lookup street-&gt;centerlines)]))</span>
+<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>        <span class="co">;; Find intersecting segments (using buffers created in data.clj)</span></span>
+<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a>        (tc/map-columns <span class="at">:intersecting-segments</span></span>
+<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a>                        [<span class="at">:centerlines</span>]</span>
+<span id="cb42-16"><a href="#cb42-16" aria-hidden="true" tabindex="-1"></a>                        (<span class="kw">fn</span> [[centerlines1 centerlines2]]</span>
+<span id="cb42-17"><a href="#cb42-17" aria-hidden="true" tabindex="-1"></a>                          (<span class="kw">for</span> [cl1 centerlines1</span>
+<span id="cb42-18"><a href="#cb42-18" aria-hidden="true" tabindex="-1"></a>                                cl2 centerlines2</span>
+<span id="cb42-19"><a href="#cb42-19" aria-hidden="true" tabindex="-1"></a>                                <span class="at">:when</span> (.intersects (<span class="at">:local-buffer</span> cl1)</span>
+<span id="cb42-20"><a href="#cb42-20" aria-hidden="true" tabindex="-1"></a>                                                   (<span class="at">:local-buffer</span> cl2))]</span>
+<span id="cb42-21"><a href="#cb42-21" aria-hidden="true" tabindex="-1"></a>                            [cl1 cl2])))</span>
+<span id="cb42-22"><a href="#cb42-22" aria-hidden="true" tabindex="-1"></a>        <span class="co">;; Calculate intersection centers (uses data/bay-area-&gt;wgs84)</span></span>
+<span id="cb42-23"><a href="#cb42-23" aria-hidden="true" tabindex="-1"></a>        (tc/map-columns <span class="at">:intersection-center</span></span>
+<span id="cb42-24"><a href="#cb42-24" aria-hidden="true" tabindex="-1"></a>                        [<span class="at">:intersecting-segments</span>]</span>
+<span id="cb42-25"><a href="#cb42-25" aria-hidden="true" tabindex="-1"></a>                        calculate-intersection-center))))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="summary-key-techniques-used-in-this-project" class="level2" data-number="2.10">
+<h2 data-number="2.10" class="anchored" data-anchor-id="summary-key-techniques-used-in-this-project"><span class="header-section-number">2.10</span> Summary: Key Techniques Used in This Project</h2>
+<section id="manual-intersection-lookup" class="level3" data-number="2.10.1">
+<h3 data-number="2.10.1" class="anchored" data-anchor-id="manual-intersection-lookup"><span class="header-section-number">2.10.1</span> 1. <strong>Manual Intersection Lookup</strong></h3>
+<ul>
+<li><strong>What we used</strong>: Both Grand Ave and Telegraph Ave analyses in <code>index.clj</code></li>
+<li>Fast and simple when you know your area</li>
+<li>Requires manually looking up coordinates for specific intersections</li>
+</ul>
+</section>
+<section id="automated-spatial-matching" class="level3" data-number="2.10.2">
+<h3 data-number="2.10.2" class="anchored" data-anchor-id="automated-spatial-matching"><span class="header-section-number">2.10.2</span> 2. <strong>Automated Spatial Matching</strong></h3>
+<ul>
+<li><strong>Explored in</strong>: <code>locations.clj</code> for advanced analysis</li>
+<li>Would scale to whole city without manual lookup</li>
+<li>Uses street centerline geometry and coordinate transformations</li>
+</ul>
+</section>
+<section id="street-name-normalization" class="level3" data-number="2.10.3">
+<h3 data-number="2.10.3" class="anchored" data-anchor-id="street-name-normalization"><span class="header-section-number">2.10.3</span> 3. <strong>Street Name Normalization</strong></h3>
+<ul>
+<li>Remove directional suffixes (WB, NB, EB, SB, WESTBOUND, etc.)</li>
+<li>Extract multiple street names from complex fields (“75TH ON HEGENBERGER”)</li>
+<li>Build lookup indexes for fast matching</li>
+</ul>
+</section>
+<section id="coordinate-system-transformations" class="level3" data-number="2.10.4">
+<h3 data-number="2.10.4" class="anchored" data-anchor-id="coordinate-system-transformations"><span class="header-section-number">2.10.4</span> 4. <strong>Coordinate System Transformations</strong></h3>
+<ul>
+<li>Transform to local projected coordinates (EPSG:2227) for accurate distance calculations</li>
+<li>Use 50-foot buffers for fuzzy spatial matching</li>
+<li>Transform back to WGS84 for mapping/display</li>
+</ul>
+</section>
+<section id="tensor-operations-for-geometry" class="level3" data-number="2.10.5">
+<h3 data-number="2.10.5" class="anchored" data-anchor-id="tensor-operations-for-geometry"><span class="header-section-number">2.10.5</span> 5. <strong>Tensor Operations for Geometry</strong></h3>
+<ul>
+<li>Use tech.ml.dataset tensor operations for efficient distance calculations</li>
+<li>Find nearest points between line strings</li>
+<li>Average coordinates to find intersection centers</li>
+</ul>
+</section>
+<section id="spatial-indexing" class="level3" data-number="2.10.6">
+<h3 data-number="2.10.6" class="anchored" data-anchor-id="spatial-indexing"><span class="header-section-number">2.10.6</span> 6. <strong>Spatial Indexing</strong></h3>
+<ul>
+<li>Use R-tree indexes (STRtree) for fast spatial queries</li>
+<li>PreparedGeometry for efficient repeated intersection tests</li>
+<li>Point-in-polygon for neighborhood assignment</li>
+</ul>
+</section>
+</section>
+<section id="when-to-use-which-approach" class="level2" data-number="2.11">
+<h2 data-number="2.11" class="anchored" data-anchor-id="when-to-use-which-approach"><span class="header-section-number">2.11</span> When to Use Which Approach</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 40%">
+<col style="width: 40%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Scenario</th>
+<th>Approach</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Known intersections in focused area</td>
+<td>Manual lookup</td>
+<td>Simple, fast, you control exactly what to include (this is what we used!)</td>
+</tr>
+<tr class="even">
+<td>City-wide analysis of all crashes</td>
+<td>Automated matching</td>
+<td>Can’t manually lookup thousands of intersections</td>
+</tr>
+<tr class="odd">
+<td>Missing street names entirely</td>
+<td>Need source coordinates</td>
+<td>Neither approach can derive location without street names</td>
+</tr>
+<tr class="even">
+<td>Very messy/inconsistent street names</td>
+<td>Manual lookup</td>
+<td>Less prone to matching errors</td>
+</tr>
+<tr class="odd">
+<td>Real-time/production system</td>
+<td>Automated</td>
+<td>Can’t manually lookup every new crash</td>
+</tr>
+<tr class="even">
+<td>Exploratory analysis of specific corridor</td>
+<td>Manual lookup</td>
+<td>Quick to set up for 10-20 intersections</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="what-we-did-in-this-project" class="level2" data-number="2.12">
+<h2 data-number="2.12" class="anchored" data-anchor-id="what-we-did-in-this-project"><span class="header-section-number">2.12</span> What We Did in This Project</h2>
+<ul>
+<li><strong>Grand Ave</strong> (<code>index.clj</code>): Manual lookup with <code>grand-intersections-of-interest</code></li>
+<li><strong>Telegraph Ave</strong> (<code>index.clj</code>): Manual lookup with <code>kono-intersections-of-interest</code> and <code>pill-hill-intersections-of-interest</code></li>
+<li><strong>Advanced exploration</strong> (<code>locations.clj</code>): Automated centerline matching for city-wide patterns</li>
+</ul>
+</section>
+<section id="libraries-used" class="level2" data-number="2.13">
+<h2 data-number="2.13" class="anchored" data-anchor-id="libraries-used"><span class="header-section-number">2.13</span> Libraries Used</h2>
+<ul>
+<li><strong><a href="https://github.com/Factual/geo">factual/geo</a></strong>: JTS wrapper, CRS transforms, I/O</li>
+<li><strong><a href="https://github.com/scicloj/tablecloth">tablecloth</a></strong>: DataFrame operations</li>
+<li><strong><a href="https://github.com/techascent/tech.ml.dataset">tech.ml.dataset</a></strong>: Tensors and efficient computation</li>
+<li><strong><a href="https://github.com/cnuernber/charred">charred</a></strong>: Fast JSON parsing</li>
+</ul>
+</section>
+<section id="see-the-real-code" class="level2" data-number="2.14">
+<h2 data-number="2.14" class="anchored" data-anchor-id="see-the-real-code"><span class="header-section-number">2.14</span> See the Real Code</h2>
+<ul>
+<li><code>notebooks/index.clj</code> - Grand Ave analysis with manual lookup</li>
+<li><code>notebooks/locations.clj</code> - Sophisticated spatial matching with tensors</li>
+<li><code>notebooks/data.clj</code> - Data loading and preprocessing</li>
+</ul>
+<hr>
+<p><em>This tutorial documents the techniques used in the <a href="https://github.com/tophat8855/grand-ave">Grand Ave crash analysis project</a>, created for the Clojure data science community to show real-world GIS data handling.</em></p>
+<div style="background-color:grey;height:2px;width:100%;"></div>
+<div><pre><small><small>source: notebooks/tutorial.clj</small></small></pre></div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./index.html" class="pagination-link" aria-label="Grand Ave, Oakland, CA">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Grand Ave, Oakland, CA</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -3,5 +3,5 @@ format:
   revealjs: {theme: solarized, navigation-mode: vertical, transition: slide, background-transition: fade, incremental: true}
 project: {type: book}
 book:
-  chapters: [index.qmd]
+  chapters: [index.qmd, tutorial.qmd]
   title: Grand Ave, Oakland
